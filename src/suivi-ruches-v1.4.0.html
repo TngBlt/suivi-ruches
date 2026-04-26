@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐝 Suivi Ruches v1.4.0 - App Apicole IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* HEADER & MENU */
+        .header {
+            background: linear-gradient(135deg, #8b6914 0%, #a8860d 100%);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .menu-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* SIDEBAR MENU */
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding-top: 70px;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-item {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #333;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+            background: #f0f0f0;
+            border-left-color: #8b6914;
+        }
+
+        .sidebar-item.active {
+            background: #f9f7f2;
+            border-left-color: #8b6914;
+            color: #8b6914;
+            font-weight: 600;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #ddd;
+            margin: 0.5rem 0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 0;
+            min-height: calc(100vh - 60px);
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CARDS & LAYOUT */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #8b6914;
+            margin-bottom: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* RUCHE CARDS */
+        .ruche-card {
+            background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%);
+            border: 2px solid #d4a574;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ruche-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(139, 105, 20, 0.2);
+        }
+
+        .ruche-card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #8b6914;
+            margin-bottom: 0.5rem;
+        }
+
+        .ruche-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0.3rem 0;
+        }
+
+        .ruche-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .status-a-installer { background: #ffd54f; color: #333; }
+        .status-active { background: #81c784; color: white; }
+        .status-faible { background: #ff8a80; color: white; }
+        .status-essaimage { background: #ffa726; color: white; }
+
+        /* VIEW MODE */
+        .view-mode {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .view-mode.active {
+            display: none;
+        }
+
+        .info-group {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .edit-mode {
+            display: none;
+        }
+
+        .edit-mode.active {
+            display: block;
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #8b6914;
+            box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #8b6914;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6d5411;
+        }
+
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* CADRES VISUALIZATION */
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .frame-visual {
+            aspect-ratio: 2/3;
+            border: 2px solid #d4a574;
+            border-radius: 4px;
+            padding: 0.5rem;
+            background: linear-gradient(180deg, #fffdf7 0%, #f5f0e8 100%);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            overflow: hidden;
+        }
+
+        .frame-visual:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .frame-segment {
+            flex: 1;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.7rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .frame-empty { background: #f0ebe0; border: 1px dashed #ddd; }
+        .frame-eggs { background: linear-gradient(135deg, #fff9e6 0%, #ffe680 100%); }
+        .frame-larvae { background: linear-gradient(135deg, #e1f5fe 0%, #81d4fa 100%); }
+        .frame-capped { background: linear-gradient(135deg, #fff3e0 0%, #ffb74d 100%); }
+        .frame-honey { background: linear-gradient(135deg, #fff59d 0%, #fdd835 100%); }
+        .frame-pollen { background: linear-gradient(135deg, #f3e5f5 0%, #ce93d8 100%); }
+        .frame-new { background: linear-gradient(135deg, #ede7f6 0%, #9575cd 100%); }
+
+        /* INVENTAIRE */
+        .inventory-item {
+            background: white;
+            padding: 1.5rem;
+            border-left: 4px solid #8b6914;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inventory-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .inventory-qty {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #8b6914;
+        }
+
+        .qty-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #8b6914;
+        }
+
+        .qty-btn:hover {
+            background: #f0f0f0;
+        }
+
+        /* INTERVENTIONS */
+        .intervention-card {
+            background: linear-gradient(135deg, #f9f7f2 0%, #f5f0e8 100%);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+
+        .intervention-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .intervention-type {
+            font-weight: 600;
+        }
+
+        .intervention-datetime {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .frames-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <h1>🐝 Suivi Apicole</h1>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay" onclick="closeMenu()"></div>
+
+    <!-- SIDEBAR MENU -->
+    <div class="sidebar">
+        <button class="sidebar-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+            📊 Tableau de Bord
+        </button>
+        <button class="sidebar-item" data-section="ruches" onclick="switchSection('ruches')">
+            🏠 Mes Ruches
+        </button>
+        <button class="sidebar-item" data-section="cadres" onclick="switchSection('cadres')">
+            📋 Visualiser Cadres
+        </button>
+        <button class="sidebar-item" data-section="interventions" onclick="switchSection('interventions')">
+            📝 Journal Interventions
+        </button>
+        <button class="sidebar-item" data-section="inventaire" onclick="switchSection('inventaire')">
+            📦 Inventaire
+        </button>
+        <div class="sidebar-divider"></div>
+        <button class="sidebar-item" data-section="dr-abeille" onclick="switchSection('dr-abeille')">
+            🧠 Dr. Abeille
+        </button>
+        <button class="sidebar-item" data-section="environnement" onclick="switchSection('environnement')">
+            🌍 Flore & Faune
+        </button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section active">
+            <div class="card">
+                <div class="card-title">📊 Vue d'ensemble</div>
+                <p>Bienvenue dans votre suivi apicole! Sélectionnez une section dans le menu.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🏠 Vos Ruches</div>
+                <div class="grid" id="dashboardRuches"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚠️ Alertes</div>
+                <div id="dashboardAlertes"></div>
+            </div>
+        </div>
+
+        <!-- RUCHES -->
+        <div id="ruches" class="section">
+            <div class="card">
+                <div class="card-title">🏠 Gestion des Ruches</div>
+                <button class="btn btn-primary" onclick="creerRuche()">➕ Nouvelle Ruche</button>
+                <div class="grid" id="ruchesGrid" style="margin-top: 1.5rem;"></div>
+            </div>
+
+            <!-- DETAIL RUCHE -->
+            <div id="rucheDetailContainer"></div>
+        </div>
+
+        <!-- CADRES -->
+        <div id="cadres" class="section">
+            <div class="card">
+                <div class="card-title">📋 Visualiser les Cadres</div>
+                <div id="cadresSelector"></div>
+                <div id="cadresVisualization"></div>
+            </div>
+        </div>
+
+        <!-- INTERVENTIONS -->
+        <div id="interventions" class="section">
+            <div class="card">
+                <div class="card-title">📝 Journal des Interventions</div>
+                <button class="btn btn-primary" onclick="openInterventionModal()">➕ Enregistrer une intervention</button>
+                <div id="interventionsList" style="margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+
+        <!-- INVENTAIRE -->
+        <div id="inventaire" class="section">
+            <div class="card">
+                <div class="card-title">📦 Inventaire des Stocks</div>
+                <div id="inventoryList"></div>
+            </div>
+        </div>
+
+        <!-- DR ABEILLE -->
+        <div id="dr-abeille" class="section">
+            <div class="card">
+                <div class="card-title">🐝 Dr. Abeille - Assistant IA</div>
+                <div id="aiMessages" style="background: #f9f7f2; border-radius: 4px; padding: 1rem; min-height: 300px; max-height: 500px; overflow-y: auto; margin-bottom: 1rem;">
+                    <div style="color: #8b6914; font-weight: 600;">Bienvenue! Je suis Dr. Abeille, votre expert apicole. Posez vos questions!</div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="aiInput" class="form-input" placeholder="Votre question..." onkeypress="if(event.key==='Enter') sendAIMessage()">
+                    <button class="btn btn-primary btn-small" onclick="sendAIMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENVIRONNEMENT -->
+        <div id="environnement" class="section">
+            <div class="card">
+                <div class="card-title">🌍 Analyser Flore & Faune</div>
+                <div id="environnementMessages" style="background: #f9f7f2; border-radius: 4px; padding: 1rem; min-height: 300px; max-height: 500px; overflow-y: auto; margin-bottom: 1rem;">
+                    <div style="color: #4CAF50; font-weight: 600;">Décrivez votre environnement ou uploadez une photo!</div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="file" id="environnementPhoto" accept="image/*" style="display: none;" onchange="sendEnvironmentPhoto()">
+                    <button class="btn btn-primary btn-small" onclick="document.getElementById('environnementPhoto').click()" style="background: #4CAF50;">📸 Photo</button>
+                    <button class="btn btn-primary btn-small" onclick="generateEnvironmentSummary()" style="background: #8BC34A;">📋 Résumé</button>
+                    <input type="text" id="environnementInput" class="form-input" placeholder="Décrivez votre environnement..." onkeypress="if(event.key==='Enter') sendEnvironmentMessage()">
+                    <button class="btn btn-primary btn-small" style="background: #4CAF50;" onclick="sendEnvironmentMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INTERVENTION -->
+    <div id="interventionModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="card" style="max-width: 500px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="color: #8b6914; margin: 0;">📝 Enregistrer une intervention</h2>
+                <button onclick="closeInterventionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ruche *</label>
+                <select id="interventionRuche" class="form-select">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Type d'intervention *</label>
+                <select id="interventionType" class="form-select" onchange="updateFormFields()">
+                    <option value="">-- Sélectionner --</option>
+                    <option value="observation">👁️ Observation</option>
+                    <option value="traitement">💊 Traitement</option>
+                    <option value="recolte">🍯 Récolte</option>
+                    <option value="division">✂️ Division</option>
+                    <option value="mise_ruche">🏠 Mise en ruche</option>
+                    <option value="transfert">↔️ Transfert</option>
+                    <option value="nourrissage">🍲 Nourrissage</option>
+                    <option value="piege_frelons">🪤 Piège à frelons</option>
+                    <option value="ajout_cadre">➕📋 Ajout de cadre</option>
+                    <option value="echange_cadre">🔄📋 Échange de cadre</option>
+                    <option value="suppression_cadre">❌📋 Suppression de cadre</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input type="date" id="interventionDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Heure *</label>
+                    <select id="interventionTime" class="form-select">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="00">00h</option>
+                        <option value="01">01h</option>
+                        <option value="02">02h</option>
+                        <option value="03">03h</option>
+                        <option value="04">04h</option>
+                        <option value="05">05h</option>
+                        <option value="06">06h</option>
+                        <option value="07">07h</option>
+                        <option value="08">08h</option>
+                        <option value="09">09h</option>
+                        <option value="10">10h</option>
+                        <option value="11">11h</option>
+                        <option value="12">12h</option>
+                        <option value="13">13h</option>
+                        <option value="14">14h</option>
+                        <option value="15">15h</option>
+                        <option value="16">16h</option>
+                        <option value="17">17h</option>
+                        <option value="18">18h</option>
+                        <option value="19">19h</option>
+                        <option value="20">20h</option>
+                        <option value="21">21h</option>
+                        <option value="22">22h</option>
+                        <option value="23">23h</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="dynamicFields"></div>
+
+            <div class="form-group">
+                <label class="form-label">Photos</label>
+                <input type="file" id="interventionPhotos" accept="image/*" multiple style="padding: 0.8rem; border: 1px dashed #d4a574; border-radius: 4px; cursor: pointer;">
+                <div id="interventionPhotosPreview" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description *</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <button type="button" class="btn btn-small" onclick="toggleObservationTemplate()" style="background: #4CAF50;">📋 Template</button>
+                    <button type="button" class="btn btn-small" id="voiceBtn" onclick="toggleVoiceRecording()" style="background: #2196F3;">🎤 Dictée</button>
+                    <button type="button" class="btn btn-small" id="stopVoiceBtn" onclick="stopVoiceRecording()" style="background: #f44336; display: none;">⏹️ Arrêter</button>
+                </div>
+                
+                <!-- Template d'observation -->
+                <div id="observationTemplate" style="display: none; background: #f9f7f2; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; max-height: 300px; overflow-y: auto;">
+                    <h4 style="color: #8b6914; margin-top: 0;">📋 Checklist d'observation</h4>
+                    <div id="templateContent"></div>
+                </div>
+                
+                <!-- Statut enregistrement vocal -->
+                <div id="voiceStatus" style="display: none; background: #fff3cd; padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; color: #856404;">
+                    🎤 Enregistrement en cours...
+                </div>
+                
+                <!-- Champ description -->
+                <input type="text" id="interventionDesc" class="form-input" placeholder="Ex: Population importante ou dictez...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea id="interventionNotes" class="form-textarea" placeholder="Détails supplémentaires..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="saveIntervention()">✓ Enregistrer</button>
+                <button class="btn btn-secondary" onclick="closeInterventionModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITER CADRE -->
+    <div id="cadreModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="card" style="max-width: 700px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="cadreModalTitle" style="color: #8b6914; margin: 0;">📋 Éditer Cadre</h2>
+                <button onclick="closeCadreModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- ÉTAPE 1: Sélectionner le type principal -->
+            <div id="cadreStep1">
+                <div class="form-group">
+                    <label class="form-label">Sélectionner le type de cadre</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;" id="cadreTypeOptions"></div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2: Options spécifiques au type -->
+            <div id="cadreStep2" style="display: none;">
+                <div style="background: #f9f7f2; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+                    <div class="info-label">Type sélectionné</div>
+                    <div id="cadreSelectedType" style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 4px; font-weight: 600; font-size: 1.1rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" id="cadreOptionsLabel">Options</label>
+                    <div id="cadreContentOptions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (optionnel)</label>
+                    <textarea id="cadreNotes" class="form-textarea" placeholder="Ex: Couvain en développement..."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="backToCadreStep1()">◄ Retour</button>
+                    <button class="btn btn-primary" onclick="saveCadreContent()">✓ Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ DONNÉES ============
+        let ruches = JSON.parse(localStorage.getItem('ruches')) || [];
+        let interventionsParRuche = JSON.parse(localStorage.getItem('interventionsParRuche')) || {};
+        let cadresParRuche = JSON.parse(localStorage.getItem('cadresParRuche')) || {};
+        let inventaire = JSON.parse(localStorage.getItem('inventaire')) || {
+            // Cadres
+            cadres_total: 25,
+            cadres_files: 10,
+            cadres_cires_corps: 15,
+            cadres_cires_hausse: 8,
+            
+            // Ruches et équipements majeurs
+            ruches_complete: 2,
+            ruchettes: 1,
+            grille_reine: 2,
+            partitions: 3,
+            
+            // Nourriture
+            sirop_litres: 20,
+            candy_kg: 5,
+            
+            // Matières premières
+            feuilles_cire: 50,
+            
+            // Accessoires consommables
+            nourrisseurs: 4
+        };
+        let activeSection = 'dashboard';
+        let activeRucheDetail = null;
+        let environnementMessages = JSON.parse(localStorage.getItem('environnementMessages')) || [];
+
+        // TYPES INTERVENTIONS
+        const TYPES_INTERVENTIONS = {
+            observation: { emoji: '👁️', label: 'Observation', couleur: '#2196F3' },
+            traitement: { emoji: '💊', label: 'Traitement', couleur: '#FF9800' },
+            recolte: { emoji: '🍯', label: 'Récolte', couleur: '#8BC34A' },
+            ajout_cadre: { emoji: '➕📋', label: 'Ajout de cadre', couleur: '#4CAF50' },
+            echange_cadre: { emoji: '🔄📋', label: 'Échange de cadre', couleur: '#00BCD4' },
+            suppression_cadre: { emoji: '❌📋', label: 'Suppression de cadre', couleur: '#F44336' },
+            division: { emoji: '✂️', label: 'Division', couleur: '#9C27B0' },
+            mise_ruche: { emoji: '🏠', label: 'Mise en ruche', couleur: '#00897B' },
+            transfert: { emoji: '↔️', label: 'Transfert', couleur: '#1976D2' },
+            nourrissage: { emoji: '🍲', label: 'Nourrissage', couleur: '#F57C00' },
+            piege_frelons: { emoji: '🪤', label: 'Piège à frelons', couleur: '#D32F2F' }
+        };
+
+        // Template d'observation guidée
+        const OBSERVATION_TEMPLATE = {
+            cadres_initiaux: {
+                label: "État des cadres initiaux",
+                points: [
+                    "Bâti régulier et dense?",
+                    "Cadres bien construits ou imparfaits?"
+                ]
+            },
+            couvain: {
+                label: "Couvain",
+                points: [
+                    "Surface couverte (% du cadre)?",
+                    "Stade présent: œufs, larves, operculé?",
+                    "Motif régulier ou dispersé?"
+                ]
+            },
+            reserves: {
+                label: "Réserves",
+                points: [
+                    "Pollen: oui, quantité?",
+                    "Miel: oui, quantité?",
+                    "Cadres vides?"
+                ]
+            },
+            force: {
+                label: "Force de la colonie",
+                points: [
+                    "Population générale: faible, moyenne, forte?",
+                    "Recouvrement des cadres: %?",
+                    "Agressivité des abeilles?"
+                ]
+            },
+            reine: {
+                label: "Reine",
+                points: [
+                    "Aperçue?",
+                    "Jeune ou vieille?",
+                    "Ponte active?"
+                ]
+            },
+            sante: {
+                label: "Santé",
+                points: [
+                    "Varroas visibles?",
+                    "Maladies observées?",
+                    "Comportement anormal?"
+                ]
+            }
+        };
+            cire: '🟨 Ciré',
+            doublage: '🪵 Doublage',
+            isolant: '🧊 Isolant',
+            plastique: '♻️ Plastique',
+            neuf: '✨ Neuf',
+            partition: '🪧 Partition'
+        };
+
+        // Types principaux de cadres
+        const TYPES_CADRES_PRINCIPAUX = {
+            couvain: { emoji: '🟠', label: 'Cadre de Couvain', color: '#FFB74D' },
+            reserve: { emoji: '🍯', label: 'Cadre de Réserve', color: '#FDD835' },
+            nouveau: { emoji: '⭐', label: 'Nouveau Cadre', color: '#9575CD' },
+            vide: { emoji: '⬜', label: 'Cadre Vide', color: '#f0ebe0' },
+            partition: { emoji: '🪧', label: 'Partition', color: '#8D6E63' }
+        };
+
+        // Options spécifiques au couvain
+        const OPTIONS_COUVAIN = {
+            complet: { emoji: '✅', label: 'Complet' },
+            faible: { emoji: '⚠️', label: 'Faible' },
+            male: { emoji: '🟢', label: 'Contient du couvain mâle' },
+            royal: { emoji: '👑', label: 'Contient du couvain royal' },
+            larves: { emoji: '🔵', label: 'Contient des larves' },
+            oeufs: { emoji: '🟨', label: 'Contient des œufs' }
+        };
+
+        // Options spécifiques aux réserves
+        const OPTIONS_RESERVE = {
+            miel: { emoji: '🟡', label: 'Miel' },
+            pollen: { emoji: '🟣', label: 'Pollen' },
+            nectar: { emoji: '💧', label: 'Nectar' },
+            propolis: { emoji: '🟤', label: 'Propolis' }
+        };
+
+        // ============ MENU ============
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function closeMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+
+        function switchSection(sectionId) {
+            // Masquer section active
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+
+            // Afficher nouvelle section
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+            activeSection = sectionId;
+
+            closeMenu();
+
+            // Charger contenu dynamique
+            if (sectionId === 'dashboard') renderDashboard();
+            if (sectionId === 'ruches') renderRuches();
+            if (sectionId === 'cadres') renderCadres();
+            if (sectionId === 'interventions') renderInterventions();
+            if (sectionId === 'inventaire') renderInventaire();
+        }
+
+        // ============ DASHBOARD ============
+        function renderDashboard() {
+            // Ruches
+            const ruchesHtml = ruches.map(r => `
+                <div class="ruche-card" onclick="switchToRuche('${r.id}')">
+                    <div class="ruche-card-title">${r.nom}</div>
+                    <div class="ruche-info">Type: ${r.cadresTotal || 10} cadres</div>
+                    <div class="ruche-info">Cadres habités: ${r.cadresHabites || 0}/${r.cadresTotal || 10}</div>
+                    <div class="ruche-info">État: ${r.etat}</div>
+                    <div class="ruche-info">Reine: ${r.reine || 'À vérifier'}</div>
+                    <div class="ruche-status status-${r.etat.toLowerCase().replace(' ', '-')}">
+                        ${r.etat}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('dashboardRuches').innerHTML = ruchesHtml || '<p>Aucune ruche</p>';
+
+            // Alertes
+            let alertesHtml = '';
+            ruches.forEach(r => {
+                const alertes = calculerAlertes(r);
+                if (alertes.length > 0) {
+                    alertesHtml += `
+                        <div style="margin-bottom: 1rem;">
+                            <strong>${r.nom}</strong>
+                            ${alertes.map(a => `<div class="alert alert-warning">${a}</div>`).join('')}
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('dashboardAlertes').innerHTML = alertesHtml || '<p>Aucune alerte 🎉</p>';
+        }
+
+        function calculerAlertes(ruche) {
+            const alertes = [];
+            const cadresTotal = ruche.cadresTotal || 10;
+            const seuilEssaimage = Math.ceil(cadresTotal * 0.8);
+
+            if (ruche.cadresHabites >= seuilEssaimage) {
+                alertes.push('⚠️ Risque d\'essaimage - Population importante');
+            }
+            if (ruche.varroasParJour > 5) {
+                alertes.push('💊 Charge varroa élevée');
+            }
+            if (ruche.etat === 'Faible') {
+                alertes.push('📉 Affaiblissement détecté');
+            }
+            return alertes;
+        }
+
+        function switchToRuche(rucheId) {
+            activeRucheDetail = rucheId;
+            switchSection('ruches');
+            setTimeout(() => renderRucheDetail(rucheId), 100);
+        }
+
+        // ============ RUCHES ============
+        function renderRuches() {
+            const ruchesHtml = ruches.map(r => `
+                <div class="ruche-card" onclick="renderRucheDetail('${r.id}')">
+                    <div class="ruche-card-title">${r.nom}</div>
+                    <div class="ruche-info">Type: ${r.cadresTotal || 10} cadres</div>
+                    <div class="ruche-info">État: ${r.etat}</div>
+                    <div class="ruche-status status-${r.etat.toLowerCase().replace(' ', '-')}">
+                        ${r.etat}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('ruchesGrid').innerHTML = ruchesHtml || '<p>Aucune ruche. Créez-en une!</p>';
+            document.getElementById('rucheDetailContainer').innerHTML = '';
+        }
+
+        function renderRucheDetail(rucheId) {
+            const ruche = ruches.find(r => r.id == rucheId);
+            if (!ruche) return;
+
+            const html = `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div class="card-title" style="margin: 0;">${ruche.nom}</div>
+                        <div>
+                            <button class="btn btn-primary btn-small" onclick="toggleRucheEdit('${rucheId}')">✏️ Éditer</button>
+                            <button class="btn btn-danger btn-small" onclick="supprimerRuche('${rucheId}')">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+
+                    <!-- VIEW MODE -->
+                    <div id="viewMode-${rucheId}" class="view-mode">
+                        <div class="info-group">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">Dadant ${ruche.cadresTotal || 10} cadres</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">État</div>
+                            <div class="info-value" style="font-weight: 600; color: #8b6914;">${ruche.etat}</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Cadres habités</div>
+                            <div class="info-value">${ruche.cadresHabites || 0} / ${ruche.cadresTotal || 10}</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Varroas / jour</div>
+                            <div class="info-value">${ruche.varroasParJour || 0}</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Reine</div>
+                            <div class="info-value">${ruche.reine || 'À vérifier'}</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Observations</div>
+                            <div class="info-value" style="white-space: pre-wrap;">${ruche.observations || 'Aucune'}</div>
+                        </div>
+                    </div>
+
+                    <!-- EDIT MODE -->
+                    <div id="editMode-${rucheId}" class="edit-mode">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" value="${ruche.nom}" onchange="updateRuche('${rucheId}', {nom: this.value})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">État</label>
+                            <select class="form-select" onchange="updateRuche('${rucheId}', {etat: this.value})">
+                                <option ${ruche.etat === 'À installer' ? 'selected' : ''}>À installer</option>
+                                <option ${ruche.etat === 'Active' ? 'selected' : ''}>Active</option>
+                                <option ${ruche.etat === 'Faible' ? 'selected' : ''}>Faible</option>
+                                <option ${ruche.etat === 'Essaimage' ? 'selected' : ''}>Essaimage</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cadres habités</label>
+                            <input type="number" min="0" max="${ruche.cadresTotal || 10}" class="form-input" value="${ruche.cadresHabites || 0}" onchange="updateRuche('${rucheId}', {cadresHabites: parseInt(this.value)})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombre total de cadres</label>
+                            <select class="form-select" onchange="updateRuche('${rucheId}', {cadresTotal: parseInt(this.value)})">
+                                <option ${(ruche.cadresTotal || 10) === 8 ? 'selected' : ''}>8</option>
+                                <option ${(ruche.cadresTotal || 10) === 10 ? 'selected' : ''}>10</option>
+                                <option ${(ruche.cadresTotal || 10) === 12 ? 'selected' : ''}>12</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Varroas par jour</label>
+                            <input type="number" min="0" class="form-input" value="${ruche.varroasParJour || 0}" onchange="updateRuche('${rucheId}', {varroasParJour: parseInt(this.value)})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reine</label>
+                            <input type="text" class="form-input" value="${ruche.reine || ''}" placeholder="Ex: Reine noire 2024" onchange="updateRuche('${rucheId}', {reine: this.value})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Observations</label>
+                            <textarea class="form-textarea" onchange="updateRuche('${rucheId}', {observations: this.value})">${ruche.observations || ''}</textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="toggleRucheEdit('${rucheId}')">✓ Valider</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('rucheDetailContainer').innerHTML = html;
+        }
+
+        function toggleRucheEdit(rucheId) {
+            document.getElementById(`viewMode-${rucheId}`).classList.toggle('active');
+            document.getElementById(`editMode-${rucheId}`).classList.toggle('active');
+        }
+
+        function updateRuche(rucheId, updates) {
+            const ruche = ruches.find(r => r.id == rucheId);
+            if (ruche) {
+                Object.assign(ruche, updates);
+                sauvegarder();
+                renderRucheDetail(rucheId);
+            }
+        }
+
+        function creerRuche() {
+            const nouvelleRuche = {
+                id: Date.now(),
+                nom: `Ruche ${ruches.length + 1}`,
+                cadresTotal: 10,
+                etat: 'À installer',
+                cadresHabites: 0,
+                varroasParJour: 0,
+                reine: '',
+                observations: ''
+            };
+            ruches.push(nouvelleRuche);
+            sauvegarder();
+            renderRuches();
+        }
+
+        function supprimerRuche(rucheId) {
+            if (confirm('Supprimer cette ruche?')) {
+                ruches = ruches.filter(r => r.id != rucheId);
+                delete interventionsParRuche[rucheId];
+                delete cadresParRuche[rucheId];
+                sauvegarder();
+                document.getElementById('rucheDetailContainer').innerHTML = '';
+                renderRuches();
+            }
+        }
+
+        let currentCadreEdit = null; // {rucheId, position}
+
+        // ============ CADRES ============
+        function renderCadres() {
+            const selectorHtml = `
+                <select id="cadresRucheSelect" class="form-select" onchange="renderCadresDetail(this.value)" style="margin-bottom: 1.5rem;">
+                    <option value="">-- Sélectionner une ruche --</option>
+                    ${ruches.map(r => `<option value="${r.id}">${r.nom} (${r.cadresTotal || 10} cadres)</option>`).join('')}
+                </select>
+            `;
+            document.getElementById('cadresSelector').innerHTML = selectorHtml;
+            document.getElementById('cadresVisualization').innerHTML = '';
+        }
+
+        function renderCadresDetail(rucheId) {
+            if (!rucheId) {
+                document.getElementById('cadresVisualization').innerHTML = '';
+                return;
+            }
+
+            const ruche = ruches.find(r => r.id == rucheId);
+            const cadres = cadresParRuche[rucheId] || [];
+
+            let html = `
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: #8b6914; margin-bottom: 1rem;">📋 ${ruche.nom} - ${ruche.cadresTotal || 10} cadres</h3>
+                    <div class="frames-grid">
+            `;
+
+            for (let i = 1; i <= (ruche.cadresTotal || 10); i++) {
+                const cadre = cadres.find(c => c.position === i);
+                let emojiContent = '⬜';
+                let labelContent = 'Vide';
+
+                if (cadre && cadre.type) {
+                    const typeInfo = TYPES_CADRES_PRINCIPAUX[cadre.type];
+                    emojiContent = typeInfo.emoji;
+                    labelContent = typeInfo.label;
+
+                    // Afficher les options si présentes
+                    if (cadre.options && cadre.options.length > 0) {
+                        if (cadre.type === 'couvain') {
+                            labelContent += '\n' + cadre.options.map(o => OPTIONS_COUVAIN[o]?.label).filter(Boolean).join(' + ');
+                        } else if (cadre.type === 'reserve') {
+                            labelContent += '\n' + cadre.options.map(o => OPTIONS_RESERVE[o]?.label).filter(Boolean).join(' + ');
+                        }
+                    }
+                }
+
+                html += `
+                    <div class="frame-visual" onclick="openCadreModal('${rucheId}', ${i})" style="cursor: pointer; position: relative;">
+                        <div style="font-weight: bold; color: #8b6914; text-align: center;">Cadre ${i}</div>
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 2rem; text-align: center;">
+                            ${emojiContent}
+                        </div>
+                        <div style="font-size: 0.65rem; color: #666; text-align: center; word-wrap: break-word; white-space: pre-line;">
+                            ${labelContent}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+            document.getElementById('cadresVisualization').innerHTML = html;
+        }
+
+        function openCadreModal(rucheId, position) {
+            const ruche = ruches.find(r => r.id == rucheId);
+            currentCadreEdit = { rucheId, position };
+
+            // Afficher titre
+            document.getElementById('cadreModalTitle').textContent = `📋 Cadre ${position} - ${ruche.nom}`;
+
+            // Afficher étape 1: sélectionner le type
+            document.getElementById('cadreStep1').style.display = 'block';
+            document.getElementById('cadreStep2').style.display = 'none';
+
+            // Générer les boutons de type
+            const typesHtml = Object.entries(TYPES_CADRES_PRINCIPAUX).map(([key, info]) => `
+                <button 
+                    class="btn btn-secondary" 
+                    style="padding: 1rem; text-align: center; background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%); border: 2px solid #d4a574; cursor: pointer;"
+                    onclick="selectCadreType('${key}')"
+                >
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">${info.emoji}</div>
+                    <div style="font-size: 0.85rem; color: #333; font-weight: 600;">${info.label}</div>
+                </button>
+            `).join('');
+
+            document.getElementById('cadreTypeOptions').innerHTML = typesHtml;
+
+            // Ouvrir modal
+            document.getElementById('cadreModal').style.display = 'flex';
+        }
+
+        function selectCadreType(typeKey) {
+            if (!currentCadreEdit) return;
+
+            currentCadreEdit.type = typeKey;
+            const typeInfo = TYPES_CADRES_PRINCIPAUX[typeKey];
+
+            // Afficher étape 2
+            document.getElementById('cadreStep1').style.display = 'none';
+            document.getElementById('cadreStep2').style.display = 'block';
+
+            // Afficher le type sélectionné
+            document.getElementById('cadreSelectedType').innerHTML = `${typeInfo.emoji} ${typeInfo.label}`;
+
+            // Générer les options selon le type
+            let optionsObj = {};
+            let optionsLabel = 'Options';
+
+            if (typeKey === 'couvain') {
+                optionsObj = OPTIONS_COUVAIN;
+                optionsLabel = 'État du couvain';
+            } else if (typeKey === 'reserve') {
+                optionsObj = OPTIONS_RESERVE;
+                optionsLabel = 'Contenu de réserve';
+            } else if (typeKey === 'nouveau' || typeKey === 'vide' || typeKey === 'partition') {
+                // Pas d'options pour ces types
+                optionsObj = {};
+                optionsLabel = 'Pas d\'options';
+            }
+
+            document.getElementById('cadreOptionsLabel').textContent = optionsLabel;
+
+            if (Object.keys(optionsObj).length > 0) {
+                const optionsHtml = Object.entries(optionsObj).map(([key, info]) => `
+                    <label style="display: flex; align-items: center; padding: 0.8rem; background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%); border: 2px solid #d4a574; border-radius: 4px; cursor: pointer;">
+                        <input type="checkbox" id="cadre_opt_${key}" style="width: 18px; height: 18px; cursor: pointer; margin-right: 0.8rem;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 1.2rem;">${info.emoji}</div>
+                            <div style="font-size: 0.75rem; color: #333; margin-top: 0.2rem;">${info.label}</div>
+                        </div>
+                    </label>
+                `).join('');
+
+                document.getElementById('cadreContentOptions').innerHTML = optionsHtml;
+            } else {
+                document.getElementById('cadreContentOptions').innerHTML = '<p style="color: #999; grid-column: 1/-1;">Pas d\'options pour ce type</p>';
+            }
+
+            // Charger les données existantes si présentes
+            const cadres = cadresParRuche[currentCadreEdit.rucheId] || [];
+            const cadre = cadres.find(c => c.position === currentCadreEdit.position);
+
+            if (cadre && cadre.type === typeKey && cadre.options) {
+                cadre.options.forEach(opt => {
+                    const checkbox = document.getElementById(`cadre_opt_${opt}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+
+            document.getElementById('cadreNotes').value = (cadre && cadre.notes) ? cadre.notes : '';
+        }
+
+        function backToCadreStep1() {
+            document.getElementById('cadreStep1').style.display = 'block';
+            document.getElementById('cadreStep2').style.display = 'none';
+            currentCadreEdit.type = null;
+        }
+
+        function saveCadreContent() {
+            if (!currentCadreEdit || !currentCadreEdit.type) {
+                alert('Sélectionnez un type de cadre');
+                return;
+            }
+
+            const rucheId = currentCadreEdit.rucheId; // Sauvegarder avant de perdre la référence
+            const cadres = cadresParRuche[rucheId] || [];
+            let cadre = cadres.find(c => c.position === currentCadreEdit.position);
+
+            if (!cadre) {
+                cadre = { position: currentCadreEdit.position, type: currentCadreEdit.type, options: [], notes: '' };
+                if (!cadresParRuche[rucheId]) {
+                    cadresParRuche[rucheId] = [];
+                }
+                cadresParRuche[rucheId].push(cadre);
+            }
+
+            // Collecter les options sélectionnées
+            const selectedOptions = [];
+            document.querySelectorAll('input[id^="cadre_opt_"]:checked').forEach(checkbox => {
+                const optionKey = checkbox.id.replace('cadre_opt_', '');
+                selectedOptions.push(optionKey);
+            });
+
+            cadre.type = currentCadreEdit.type;
+            cadre.options = selectedOptions;
+            cadre.notes = document.getElementById('cadreNotes').value;
+
+            sauvegarder();
+            closeCadreModal();
+            renderCadresDetail(rucheId); // Utiliser la variable sauvegardée
+        }
+
+        function closeCadreModal() {
+            document.getElementById('cadreModal').style.display = 'none';
+            currentCadreEdit = null;
+            document.getElementById('cadreNotes').value = '';
+        }
+
+        // ============ INTERVENTIONS ============
+        function renderInterventions() {
+            updateInterventionRucheSelect();
+
+            let html = '';
+            let allInterventions = [];
+
+            Object.entries(interventionsParRuche).forEach(([rucheId, interventions]) => {
+                const ruche = ruches.find(r => r.id == rucheId);
+                if (ruche) {
+                    interventions.forEach(i => {
+                        allInterventions.push({...i, rucheName: ruche.nom, rucheId});
+                    });
+                }
+            });
+
+            allInterventions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            allInterventions.forEach(int => {
+                const type = TYPES_INTERVENTIONS[int.type] || { emoji: '❓', label: 'Autre', couleur: '#999' };
+                const photosHTML = (int.photos && int.photos.length > 0) ? `
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        ${int.photos.map((photo, idx) => `
+                            <img src="${photo}" style="max-width: 150px; height: 150px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="viewPhoto('${photo}')">
+                        `).join('')}
+                    </div>
+                ` : '';
+                
+                html += `
+                    <div class="intervention-card" style="border-left-color: ${type.couleur};">
+                        <div class="intervention-header">
+                            <div class="intervention-type" style="color: ${type.couleur};">
+                                ${type.emoji} ${type.label} - <strong>${int.rucheName}</strong>
+                            </div>
+                            <div class="intervention-datetime">${int.date} ${int.heure}</div>
+                        </div>
+                        <div>${int.description}</div>
+                        ${int.notes ? `<div style="margin-top: 0.5rem; color: #666; font-style: italic;">${int.notes}</div>` : ''}
+                        ${photosHTML}
+                        <button class="btn btn-danger btn-small" style="margin-top: 0.5rem;" onclick="supprimerIntervention('${int.rucheId}', ${int.id})">Supprimer</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('interventionsList').innerHTML = html || '<p>Aucune intervention</p>';
+        }
+
+        function updateInterventionRucheSelect() {
+            const options = ruches.map(r => `<option value="${r.id}">${r.nom}</option>`).join('');
+            document.getElementById('interventionRuche').innerHTML = '<option value="">-- Sélectionner --</option>' + options;
+        }
+
+        function openInterventionModal() {
+            updateInterventionRucheSelect();
+            
+            // Pré-remplir avec la date actuelle
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            
+            document.getElementById('interventionDate').value = `${year}-${month}-${day}`;
+            document.getElementById('interventionTime').value = hours;
+            
+            document.getElementById('interventionModal').style.display = 'flex';
+        }
+
+        function closeInterventionModal() {
+            document.getElementById('interventionModal').style.display = 'none';
+            document.getElementById('interventionRuche').value = '';
+            document.getElementById('interventionType').value = '';
+            document.getElementById('interventionDate').value = '';
+            document.getElementById('interventionTime').value = '';
+            document.getElementById('interventionDesc').value = '';
+            document.getElementById('interventionNotes').value = '';
+            document.getElementById('interventionPhotos').value = '';
+            document.getElementById('interventionPhotosPreview').innerHTML = '';
+            document.getElementById('dynamicFields').innerHTML = '';
+            
+            // Réinitialiser le template et la voix
+            document.getElementById('observationTemplate').style.display = 'none';
+            document.getElementById('voiceStatus').style.display = 'none';
+            document.getElementById('voiceBtn').style.display = 'inline-block';
+            document.getElementById('stopVoiceBtn').style.display = 'none';
+            
+            // Arrêter l'enregistrement si actif
+            if (isRecording && recognition) {
+                recognition.stop();
+            }
+        }
+
+        function previewInterventionPhotos() {
+            const input = document.getElementById('interventionPhotos');
+            const preview = document.getElementById('interventionPhotosPreview');
+            preview.innerHTML = '';
+
+            Array.from(input.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.cssText = 'max-width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 2px solid #d4a574;';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Ajouter l'événement de prévisualisation
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoInput = document.getElementById('interventionPhotos');
+            if (photoInput) {
+                photoInput.addEventListener('change', previewInterventionPhotos);
+            }
+            
+            // Charger et afficher les messages de l'environnement
+            loadEnvironmentMessages();
+        });
+        
+        function loadEnvironmentMessages() {
+            const messagesDiv = document.getElementById('environnementMessages');
+            if (!messagesDiv) return;
+            
+            messagesDiv.innerHTML = '';
+            
+            if (environnementMessages.length === 0) {
+                messagesDiv.innerHTML = '<div style="color: #4CAF50; font-weight: 600;">Décrivez votre environnement ou uploadez une photo!</div>';
+                return;
+            }
+            
+            environnementMessages.forEach(msg => {
+                const msgElement = document.createElement('div');
+                
+                if (msg.type === 'user') {
+                    msgElement.style.cssText = 'padding: 0.5rem; background: #fff9c4; margin: 0.5rem 0; border-radius: 4px;';
+                    msgElement.textContent = '👤 ' + msg.content;
+                } else if (msg.type === 'assistant') {
+                    msgElement.style.cssText = 'padding: 0.5rem; background: #c8e6c9; margin: 0.5rem 0; border-radius: 4px;';
+                    msgElement.textContent = msg.content;
+                } else if (msg.type === 'photo') {
+                    msgElement.style.cssText = 'padding: 0.5rem; margin: 0.5rem 0;';
+                    msgElement.innerHTML = `<img src="${msg.content}" style="max-width: 200px; border-radius: 4px;">`;
+                }
+                
+                messagesDiv.appendChild(msgElement);
+            });
+            
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Variables pour l'enregistrement vocal
+        let recognition = null;
+        let isRecording = false;
+
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fr-FR';
+                recognition.continuous = true;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    isRecording = true;
+                    document.getElementById('voiceBtn').style.display = 'none';
+                    document.getElementById('stopVoiceBtn').style.display = 'inline-block';
+                    document.getElementById('voiceStatus').style.display = 'block';
+                };
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            document.getElementById('interventionDesc').value += ' ' + transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    if (interimTranscript) {
+                        document.getElementById('interventionDesc').placeholder = '🎤 ' + interimTranscript;
+                    }
+                };
+
+                recognition.onend = () => {
+                    isRecording = false;
+                    document.getElementById('voiceBtn').style.display = 'inline-block';
+                    document.getElementById('stopVoiceBtn').style.display = 'none';
+                    document.getElementById('voiceStatus').style.display = 'none';
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Erreur vocal:', event.error);
+                    alert('Erreur: ' + event.error);
+                    isRecording = false;
+                    document.getElementById('voiceBtn').style.display = 'inline-block';
+                    document.getElementById('stopVoiceBtn').style.display = 'none';
+                    document.getElementById('voiceStatus').style.display = 'none';
+                };
+            }
+        }
+
+        function toggleVoiceRecording() {
+            if (!recognition) {
+                initVoiceRecognition();
+            }
+            
+            if (!isRecording && recognition) {
+                recognition.start();
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        }
+
+        function toggleObservationTemplate() {
+            const templateDiv = document.getElementById('observationTemplate');
+            const content = document.getElementById('templateContent');
+            
+            if (templateDiv.style.display === 'none') {
+                // Afficher le template
+                let html = '';
+                Object.entries(OBSERVATION_TEMPLATE).forEach(([key, section]) => {
+                    html += `
+                        <div style="margin-bottom: 1rem;">
+                            <h5 style="color: #4CAF50; margin: 0.5rem 0;">${section.label}</h5>
+                            <ul style="margin: 0.3rem 0; padding-left: 1.5rem; font-size: 0.9rem;">
+                                ${section.points.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+                content.innerHTML = html;
+                templateDiv.style.display = 'block';
+            } else {
+                templateDiv.style.display = 'none';
+            }
+        }
+
+        function updateFormFields() {
+            const type = document.getElementById('interventionType').value;
+            const html = type === 'ajout_cadre' ? `
+                <div class="form-group">
+                    <label class="form-label">Année</label>
+                    <input type="number" id="cadreAnnee" class="form-input" min="2000" max="${new Date().getFullYear()}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select id="cadreType" class="form-select">
+                        <option value="">-- Sélectionner --</option>
+                        ${Object.entries(TYPES_CADRES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
+                    </select>
+                </div>
+            ` : '';
+            document.getElementById('dynamicFields').innerHTML = html;
+        }
+
+        function saveIntervention() {
+            const rucheId = document.getElementById('interventionRuche').value;
+            const type = document.getElementById('interventionType').value;
+            const desc = document.getElementById('interventionDesc').value;
+            const dateStr = document.getElementById('interventionDate').value;
+            const timeStr = document.getElementById('interventionTime').value;
+
+            if (!rucheId || !type || !desc || !dateStr || !timeStr) {
+                alert('Remplissez les champs obligatoires');
+                return;
+            }
+
+            // Convertir la date au format français
+            const dateParts = dateStr.split('-');
+            const dateFormattee = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            
+            // Créer un timestamp ISO à partir de la date et l'heure (ajouter :00 pour les minutes)
+            const timestamp = new Date(`${dateStr}T${timeStr}:00`).toISOString();
+            
+            // Formater l'heure affichée avec un "h"
+            const heureAffichee = `${timeStr}h`;
+
+            const intervention = {
+                id: Date.now(),
+                type,
+                description: desc,
+                notes: document.getElementById('interventionNotes').value,
+                date: dateFormattee,
+                heure: heureAffichee,
+                timestamp: timestamp,
+                photos: [] // Array pour les photos en base64
+            };
+
+            // Traiter les photos
+            const photoInput = document.getElementById('interventionPhotos');
+            if (photoInput.files.length > 0) {
+                let photosLoaded = 0;
+                Array.from(photoInput.files).forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        intervention.photos.push(e.target.result);
+                        photosLoaded++;
+                        
+                        // Quand toutes les photos sont chargées, sauvegarder
+                        if (photosLoaded === photoInput.files.length) {
+                            if (!interventionsParRuche[rucheId]) interventionsParRuche[rucheId] = [];
+                            interventionsParRuche[rucheId].push(intervention);
+                            sauvegarder();
+                            closeInterventionModal();
+                            renderInterventions();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // Pas de photos, sauvegarder directement
+                if (!interventionsParRuche[rucheId]) interventionsParRuche[rucheId] = [];
+                interventionsParRuche[rucheId].push(intervention);
+                sauvegarder();
+                closeInterventionModal();
+                renderInterventions();
+            }
+        }
+
+        function viewPhoto(photoData) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center;';
+            modal.onclick = () => modal.remove();
+            
+            const img = document.createElement('img');
+            img.src = photoData;
+            img.style.cssText = 'max-width: 90vw; max-height: 90vh; object-fit: contain;';
+            
+            modal.appendChild(img);
+            document.body.appendChild(modal);
+        }
+
+        function supprimerIntervention(rucheId, intId) {
+            if (confirm('Supprimer?')) {
+                interventionsParRuche[rucheId] = interventionsParRuche[rucheId].filter(i => i.id !== intId);
+                sauvegarder();
+                renderInterventions();
+            }
+        }
+
+        // ============ INVENTAIRE ============
+        function renderInventaire() {
+            const categories = {
+                '📋 Cadres': [
+                    { key: 'cadres_total', emoji: '📊', label: 'Total de cadres', unit: '' },
+                    { key: 'cadres_files', emoji: '🟨', label: 'Cadres filés', unit: '' },
+                    { key: 'cadres_cires_corps', emoji: '🟨', label: 'Cadres cirés corps', unit: '' },
+                    { key: 'cadres_cires_hausse', emoji: '🟨', label: 'Cadres cirés hausse', unit: '' }
+                ],
+                '🏠 Ruches & Équipements': [
+                    { key: 'ruches_complete', emoji: '🏠', label: 'Ruches complètes', unit: '' },
+                    { key: 'ruchettes', emoji: '🏡', label: 'Ruchettes', unit: '' },
+                    { key: 'grille_reine', emoji: '👑', label: 'Grilles à reine', unit: '' },
+                    { key: 'partitions', emoji: '🪧', label: 'Partitions', unit: '' }
+                ],
+                '🍯 Nourriture': [
+                    { key: 'sirop_litres', emoji: '🍯', label: 'Sirop', unit: 'L' },
+                    { key: 'candy_kg', emoji: '🍬', label: 'Candy', unit: 'kg' }
+                ],
+                '🔨 Matières premières': [
+                    { key: 'feuilles_cire', emoji: '📄', label: 'Feuilles de cire', unit: '' }
+                ],
+                '🍲 Accessoires': [
+                    { key: 'nourrisseurs', emoji: '🍲', label: 'Nourrisseurs', unit: '' }
+                ]
+            };
+
+            let html = '';
+
+            Object.entries(categories).forEach(([categoryName, items]) => {
+                html += `<div style="margin-top: 2rem;">
+                    <h3 style="color: #8b6914; margin-bottom: 1rem; font-size: 1.1rem;">${categoryName}</h3>`;
+
+                items.forEach(item => {
+                    html += `
+                        <div class="inventory-item">
+                            <div class="inventory-info">
+                                <h3>${item.emoji} ${item.label}</h3>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="inventory-qty">
+                                    ${inventaire[item.key] || 0}<span style="font-size: 0.8rem; color: #999; margin-left: 0.3rem;">${item.unit}</span>
+                                </div>
+                                <div class="qty-controls">
+                                    <button class="qty-btn" onclick="updateInventaire('${item.key}', -1)">−</button>
+                                    <button class="qty-btn" onclick="updateInventaire('${item.key}', +1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            document.getElementById('inventoryList').innerHTML = html;
+        }
+
+        function updateInventaire(key, delta) {
+            inventaire[key] = Math.max(0, (inventaire[key] || 0) + delta);
+            sauvegarder();
+            renderInventaire();
+        }
+
+        // ============ IA ============
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const messagesDiv = document.getElementById('aiMessages');
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'padding: 0.5rem; background: #fff; margin: 0.5rem 0; border-radius: 4px; color: #666;';
+            userMsg.textContent = '👤 ' + message;
+            messagesDiv.appendChild(userMsg);
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Afficher un indicateur de chargement
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'padding: 0.5rem; background: #e8f5e9; margin: 0.5rem 0; border-radius: 4px; color: #333;';
+            loadingMsg.textContent = '🐝 Réflexion en cours...';
+            messagesDiv.appendChild(loadingMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Appeler Claude API
+            callClaudeAPI(message).then(response => {
+                loadingMsg.remove();
+                const assistantMsg = document.createElement('div');
+                assistantMsg.style.cssText = 'padding: 0.5rem; background: #e8f5e9; margin: 0.5rem 0; border-radius: 4px; color: #333;';
+                assistantMsg.textContent = '🐝 ' + response;
+                messagesDiv.appendChild(assistantMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }).catch(error => {
+                loadingMsg.textContent = '🐝 Erreur: ' + error.message;
+            });
+        }
+
+        async function callClaudeAPI(question) {
+            try {
+                // Essayer d'utiliser le serveur local d'abord
+                const response = await fetch("http://localhost:3000/api/claude", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        message: question,
+                        system: `Tu es Dr. Abeille, un expert en apiculture douce (apiculture naturelle et respectueuse des abeilles). 
+Tu aides les apiculteurs débutants avec des conseils pratiques basés sur:
+- L'apiculture douce (minimal intervention, respect du bien-être des abeilles)
+- Les ruches Dadant (8 ou 10 cadres)
+- L'observation plutôt que la chimie excessive
+- La gestion naturelle (essaimage naturel, reine naturelle)
+- La prévention des parasites (varroas) par des méthodes douces
+
+Réponds en français, sois concis (2-3 phrases max), et donne des conseils pratiques adaptés à un apiculteur débutant.`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.response || 'Pas de réponse';
+            } catch (error) {
+                console.error('Claude API error:', error);
+                throw new Error('Erreur: Démarrez le serveur avec: ANTHROPIC_API_KEY="votre_clé" npm start');
+            }
+        }
+
+        // ============ ENVIRONNEMENT ============
+        function generateEnvironmentSummary() {
+            if (environnementMessages.length === 0) {
+                alert('Aucune information sur l\'environnement enregistrée. Décrivez votre environnement d\'abord!');
+                return;
+            }
+
+            // Collecter les informations
+            const descriptions = environnementMessages
+                .filter(msg => msg.type === 'user')
+                .map(msg => msg.content);
+            
+            const photos = environnementMessages
+                .filter(msg => msg.type === 'photo')
+                .length;
+            
+            const observations = environnementMessages
+                .filter(msg => msg.type === 'assistant')
+                .map(msg => msg.content);
+
+            // Créer le résumé
+            let summary = `📊 RÉSUMÉ DE L'ENVIRONNEMENT\n`;
+            summary += `${'='.repeat(50)}\n\n`;
+            summary += `📅 Généré: ${new Date().toLocaleDateString('fr-FR')} ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}\n\n`;
+            
+            summary += `🌿 DESCRIPTIONS AJOUTÉES (${descriptions.length}):\n`;
+            summary += `${'-'.repeat(50)}\n`;
+            descriptions.forEach((desc, i) => {
+                summary += `${i + 1}. ${desc}\n`;
+            });
+            summary += '\n';
+            
+            summary += `📸 PHOTOS AJOUTÉES: ${photos}\n\n`;
+            
+            summary += `🦋 OBSERVATIONS & ANALYSES (${observations.length}):\n`;
+            summary += `${'-'.repeat(50)}\n`;
+            observations.forEach((obs, i) => {
+                summary += `${i + 1}. ${obs}\n`;
+            });
+
+            // Afficher le résumé dans un modal ou copier dans le presse-papiers
+            const summaryModal = document.createElement('div');
+            summaryModal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;';
+            
+            const summaryContent = document.createElement('div');
+            summaryContent.style.cssText = 'background: white; border-radius: 8px; padding: 2rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;';
+            
+            summaryContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #8b6914;">📊 Résumé Environnement</h2>
+                    <button onclick="this.closest('[style*=position]').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+                </div>
+                <pre style="background: #f9f7f2; padding: 1rem; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 0.9rem;">${summary}</pre>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="copyToClipboard(\`${summary.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">📋 Copier</button>
+                    <button class="btn btn-secondary" onclick="this.closest('[style*=position]').remove()">Fermer</button>
+                </div>
+            `;
+            
+            summaryModal.appendChild(summaryContent);
+            document.body.appendChild(summaryModal);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Résumé copié!');
+            }).catch(() => {
+                alert('Erreur lors de la copie');
+            });
+        }
+
+        function sendEnvironmentMessage() {
+            const input = document.getElementById('environnementInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Sauvegarder le message
+            environnementMessages.push({
+                type: 'user',
+                content: message,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('environnementMessages', JSON.stringify(environnementMessages));
+
+            const messagesDiv = document.getElementById('environnementMessages');
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'padding: 0.5rem; background: #fff9c4; margin: 0.5rem 0; border-radius: 4px;';
+            userMsg.textContent = '👤 ' + message;
+            messagesDiv.appendChild(userMsg);
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Afficher un indicateur de chargement
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'padding: 0.5rem; background: #c8e6c9; margin: 0.5rem 0; border-radius: 4px;';
+            loadingMsg.textContent = '🌿 Analyse en cours...';
+            messagesDiv.appendChild(loadingMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Appeler Claude API pour analyser l'environnement
+            callClaudeEnvironment(message).then(response => {
+                loadingMsg.remove();
+                const assistantMsg = document.createElement('div');
+                assistantMsg.style.cssText = 'padding: 0.5rem; background: #c8e6c9; margin: 0.5rem 0; border-radius: 4px;';
+                assistantMsg.textContent = response;
+                
+                // Sauvegarder la réponse
+                environnementMessages.push({
+                    type: 'assistant',
+                    content: response,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('environnementMessages', JSON.stringify(environnementMessages));
+                
+                messagesDiv.appendChild(assistantMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }).catch(error => {
+                loadingMsg.textContent = '🌿 Erreur: ' + error.message;
+            });
+        }
+
+        async function callClaudeEnvironment(description) {
+            try {
+                const response = await fetch("http://localhost:3000/api/claude", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        message: description,
+                        system: `Tu es un expert en botanique et écologie apicole. Ton rôle est d'analyser la flore et la faune d'un environnement apicole.
+
+Quand un apiculteur décrit ses plantes ou son environnement:
+1. Identifie les plantes mellifères mentionnées
+2. Évalue leur utilité pour les abeilles (pollen, nectar, saison)
+3. Donne des conseils sur l'amélioration de l'environnement
+4. Identifie les menaces potentielles (pesticides, monoculture, etc.)
+
+Réponds en français, sois concis (2-3 phrases max), et utilise des émojis. Sois enthousiaste et encourageant!`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.response || 'Pas de réponse';
+            } catch (error) {
+                console.error('Claude API error:', error);
+                throw new Error('Erreur: Démarrez le serveur avec: ANTHROPIC_API_KEY="votre_clé" npm start');
+            }
+        }
+
+        function sendEnvironmentPhoto() {
+            const fileInput = document.getElementById('environnementPhoto');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const messagesDiv = document.getElementById('environnementMessages');
+                const imgMsg = document.createElement('div');
+                imgMsg.style.cssText = 'padding: 0.5rem; margin: 0.5rem 0;';
+                imgMsg.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 4px;">`;
+                messagesDiv.appendChild(imgMsg);
+
+                // Sauvegarder la photo
+                environnementMessages.push({
+                    type: 'photo',
+                    content: e.target.result,
+                    filename: file.name,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('environnementMessages', JSON.stringify(environnementMessages));
+
+                // Afficher un indicateur de chargement
+                const loadingMsg = document.createElement('div');
+                loadingMsg.style.cssText = 'padding: 0.5rem; background: #c8e6c9; margin: 0.5rem 0; border-radius: 4px;';
+                loadingMsg.textContent = '🌿 Analyse de la photo...';
+                messagesDiv.appendChild(loadingMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Appeler Claude API avec vision
+                callClaudeVision(e.target.result).then(response => {
+                    loadingMsg.remove();
+                    const assistantMsg = document.createElement('div');
+                    assistantMsg.style.cssText = 'padding: 0.5rem; background: #c8e6c9; margin: 0.5rem 0; border-radius: 4px;';
+                    assistantMsg.textContent = response;
+                    
+                    // Sauvegarder la réponse
+                    environnementMessages.push({
+                        type: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    localStorage.setItem('environnementMessages', JSON.stringify(environnementMessages));
+                    
+                    messagesDiv.appendChild(assistantMsg);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }).catch(error => {
+                    loadingMsg.textContent = '🌿 Erreur: ' + error.message;
+                });
+            };
+            reader.readAsDataURL(file);
+            fileInput.value = '';
+        }
+
+        async function callClaudeVision(imageBase64) {
+            try {
+                // Extraire la partie base64 de l'image
+                const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+
+                const response = await fetch("http://localhost:3000/api/claude-vision", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        imageBase64: base64Data,
+                        prompt: "Identifie cette plante ou cet insecte et explique son utilité pour les abeilles.",
+                        system: `Tu es un expert en botanique et écologie apicole. Analyse les images de plantes et d'insectes.
+
+Pour chaque image:
+1. Identifie la plante/insecte si possible
+2. Évalue son utilité pour les abeilles
+3. Donne des conseils d'amélioration si c'est une menace
+
+Réponds en français, sois concis (2-3 phrases max), utilise des émojis. Sois enthousiaste et encourageant!`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.response || 'Pas de réponse';
+            } catch (error) {
+                console.error('Claude Vision API error:', error);
+                throw new Error('Erreur: Démarrez le serveur avec: ANTHROPIC_API_KEY="votre_clé" npm start');
+            }
+        }
+
+        // ============ SAUVEGARDE ============
+        function sauvegarder() {
+            localStorage.setItem('ruches', JSON.stringify(ruches));
+            localStorage.setItem('interventionsParRuche', JSON.stringify(interventionsParRuche));
+            localStorage.setItem('cadresParRuche', JSON.stringify(cadresParRuche));
+            localStorage.setItem('inventaire', JSON.stringify(inventaire));
+        }
+
+        // Initialisation
+        renderDashboard();
+    </script>
+</body>
+</html>

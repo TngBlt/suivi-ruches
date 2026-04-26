@@ -4,27 +4,46 @@ const fetch = require('node-fetch');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+
+// Use PORT from environment (YunoHost-friendly), default to 3000
+const PORT = process.env.PORT || 3000;
 
 // Récupérer la clé API depuis les variables d'environnement
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 
+// Warn but don't exit if API key is missing - allows the app to work without AI features
 if (!API_KEY) {
-    console.error('❌ ERREUR: Variable ANTHROPIC_API_KEY non définie!');
-    console.error('Définissez votre clé API:');
-    console.error('  macOS/Linux: export ANTHROPIC_API_KEY="sk-ant-..."');
-    console.error('  Windows: set ANTHROPIC_API_KEY=sk-ant-...');
-    process.exit(1);
+    console.warn('⚠️  AVERTISSEMENT: Variable ANTHROPIC_API_KEY non définie!');
+    console.warn('Les fonctionnalités IA (Dr. Abeille, Flore & Faune) seront désactivées.');
+    console.warn('Pour activer l\'IA:');
+    console.warn('  - macOS/Linux: export ANTHROPIC_API_KEY="sk-ant-..."');
+    console.warn('  - Windows: set ANTHROPIC_API_KEY=sk-ant-...');
+    console.warn('');
 }
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Servir le fichier HTML
+// Servir les fichiers statiques (HTML, CSS, JS, images)
 app.use(express.static(path.dirname(__filename)));
+
+// Endpoint de santé pour les health checks
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        version: '1.4.0',
+        ai_enabled: !!API_KEY 
+    });
+});
 
 // Endpoint pour Claude API (texte)
 app.post('/api/claude', async (req, res) => {
+    if (!API_KEY) {
+        return res.status(503).json({ 
+            error: 'Les fonctionnalités IA ne sont pas configurées sur ce serveur.' 
+        });
+    }
+    
     try {
         const { message, system } = req.body;
 
@@ -63,6 +82,12 @@ app.post('/api/claude', async (req, res) => {
 
 // Endpoint pour Claude Vision (photos)
 app.post('/api/claude-vision', async (req, res) => {
+    if (!API_KEY) {
+        return res.status(503).json({ 
+            error: 'Les fonctionnalités IA ne sont pas configurées sur ce serveur.' 
+        });
+    }
+    
     try {
         const { imageBase64, prompt, system } = req.body;
 
@@ -115,7 +140,13 @@ app.post('/api/claude-vision', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`\n✅ Serveur démarré sur http://localhost:${PORT}`);
-    console.log(`🐝 Apiculture App disponible\n`);
+app.listen(PORT, '127.0.0.1', () => {
+    console.log(`\n✅ Serveur démarré sur http://127.0.0.1:${PORT}`);
+    console.log(`🐝 Apiculture App disponible`);
+    if (API_KEY) {
+        console.log('🧠 Fonctionnalités IA activées');
+    } else {
+        console.log('⚠️  Fonctionnalités IA désactivées (pas de clé API)');
+    }
+    console.log('');
 });

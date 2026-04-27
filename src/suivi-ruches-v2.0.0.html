@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a1a">
+<title>Suivi Apicole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    /* Palette: miel, cire, ardoise */
+    --bg: #fafaf7;
+    --bg-elev: #ffffff;
+    --bg-soft: #f3f1ec;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-mute: #8a8a8a;
+    --line: #e6e3dc;
+    --line-strong: #c9c5bb;
+    --honey: #d4a574;
+    --honey-deep: #b8884d;
+    --wax: #f4d35e;
+    --moss: #5e6b4f;
+    --rose: #c87264;
+    --info: #4a7a9c;
+    --warn: #c89164;
+    --alert: #c25450;
+    --ok: #5e6b4f;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,.06), 0 16px 40px rgba(0,0,0,.08);
+    --radius: 6px;
+    --radius-lg: 12px;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea, button { font-family: inherit; font-size: inherit; }
+
+/* ============ HEADER ============ */
+.header {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--line);
+    height: 64px;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+}
+.menu-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    transition: all .15s;
+}
+.menu-btn:hover { background: var(--bg-soft); border-color: var(--line-strong); }
+.menu-btn svg { width: 18px; height: 18px; stroke: var(--ink); }
+
+.brand {
+    display: flex; align-items: center; gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+.brand-bee {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    position: relative;
+}
+.brand-name {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -.02em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.brand-tag {
+    font-size: 11px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-top: -2px;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+    position: fixed; top: 0; left: -320px;
+    width: 300px; height: 100vh;
+    background: var(--bg-elev);
+    border-right: 1px solid var(--line);
+    z-index: 100;
+    transition: left .25s ease;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+}
+.sidebar.open { left: 0; box-shadow: var(--shadow-lg); }
+.sidebar-head {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-head h2 {
+    font-family: var(--serif);
+    font-size: 18px; font-weight: 600;
+    letter-spacing: -.01em;
+}
+.sidebar-close {
+    width: 32px; height: 32px;
+    border: none; background: transparent;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+}
+.sidebar-close:hover { background: var(--bg-soft); }
+.sidebar-close svg { width: 16px; height: 16px; stroke: var(--ink-soft); }
+.nav { padding: 12px 12px 24px; flex: 1; }
+.nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all .12s;
+    border: none; background: transparent; width: 100%;
+    text-align: left; font-size: 14px;
+    margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--bg-soft); color: var(--ink); }
+.nav-item.active {
+    background: var(--ink);
+    color: var(--bg-elev);
+}
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; flex-shrink: 0; }
+.nav-section {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--ink-mute);
+    padding: 16px 12px 6px;
+    font-weight: 600;
+}
+.sidebar-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-mute);
+}
+.overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.32);
+    z-index: 90;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+}
+.overlay.active { opacity: 1; pointer-events: auto; }
+
+/* ============ MAIN ============ */
+.main { padding: 28px 20px 80px; max-width: 1100px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; animation: fadeIn .25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.section-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.section-title {
+    font-family: var(--serif);
+    font-size: 32px; font-weight: 500;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+}
+.section-sub {
+    font-size: 13px; color: var(--ink-mute);
+    margin-top: 4px;
+}
+
+/* ============ BUTTONS ============ */
+.btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line-strong);
+    background: var(--bg-elev);
+    color: var(--ink);
+    font-weight: 500; font-size: 14px;
+    transition: all .12s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.btn:hover { background: var(--bg-soft); border-color: var(--ink-soft); }
+.btn-primary {
+    background: var(--ink); color: var(--bg-elev);
+    border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--ink-soft); border-color: var(--ink-soft); color: var(--bg-elev); }
+.btn-ghost { border-color: transparent; }
+.btn-ghost:hover { background: var(--bg-soft); }
+.btn-danger { color: var(--alert); border-color: var(--line); }
+.btn-danger:hover { background: rgba(194,84,80,.08); border-color: var(--alert); }
+.btn-sm { padding: 6px 10px; font-size: 13px; }
+.btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; }
+
+/* ============ CARDS ============ */
+.card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: border-color .15s;
+}
+.card:hover { border-color: var(--line-strong); }
+.grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* ============ HIVE CARDS ============ */
+.hive {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.hive-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 16px;
+}
+.hive-name { font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: -.01em; }
+.hive-state {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    white-space: nowrap;
+}
+.hive-state .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+.hive-state.weak .dot { background: var(--warn); }
+.hive-state.alert .dot { background: var(--alert); }
+.hive-state.install .dot { background: var(--ink-mute); }
+.hive-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.hive-stat { font-size: 12px; }
+.hive-stat-val { font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--ink); }
+.hive-stat-lbl { color: var(--ink-mute); text-transform: uppercase; letter-spacing: .06em; font-size: 10px; margin-top: 2px; }
+
+.alerts-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.alert-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(200,145,100,.12);
+    color: var(--warn);
+    border: 1px solid rgba(200,145,100,.25);
+}
+.alert-chip.alert { background: rgba(194,84,80,.10); color: var(--alert); border-color: rgba(194,84,80,.25); }
+.alert-chip svg { width: 12px; height: 12px; stroke: currentColor; }
+
+/* ============ HIVE DETAIL VIEW ============ */
+.hive-detail-view { display: grid; gap: 20px; }
+.hive-row {
+    display: grid; gap: 16px;
+    grid-template-columns: 1fr 1fr;
+}
+.field {
+    display: flex; flex-direction: column; gap: 6px;
+}
+.field-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--ink-mute); font-weight: 600;
+}
+.field-value {
+    padding: 8px 12px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    font-weight: 500;
+    min-height: 38px;
+    display: flex; align-items: center;
+}
+.field-value.editable { background: var(--bg-elev); border: 1px solid var(--line); }
+
+/* ============ FORMS ============ */
+.form-grid { display: grid; gap: 16px; }
+.form-row { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label {
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink-soft);
+}
+.form-input, .form-select, .form-textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    color: var(--ink);
+    transition: border-color .12s;
+    font-size: 14px;
+    width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none; border-color: var(--ink);
+}
+.form-textarea { min-height: 80px; resize: vertical; font-family: var(--sans); }
+.form-help { font-size: 12px; color: var(--ink-mute); }
+
+/* multi-select hives chips */
+.hive-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hive-chip {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    background: var(--bg-elev);
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    transition: all .12s;
+    user-select: none;
+}
+.hive-chip:hover { border-color: var(--ink-soft); }
+.hive-chip.selected { background: var(--ink); color: var(--bg-elev); border-color: var(--ink); }
+
+/* ============ MODAL ============ */
+.modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(20,20,20,.55);
+    z-index: 200;
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto;
+    backdrop-filter: blur(2px);
+}
+.modal-bg.active { display: flex; animation: fadeIn .15s; }
+.modal {
+    background: var(--bg-elev);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 560px;
+    box-shadow: var(--shadow-lg);
+    margin: auto;
+    animation: slideUp .25s ease;
+    max-height: calc(100vh - 48px);
+    display: flex; flex-direction: column;
+}
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+}
+.modal-title { font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: -.01em; }
+.modal-body { padding: 24px; overflow-y: auto; }
+.modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: flex-end; gap: 10px;
+    flex-shrink: 0;
+}
+.modal-close {
+    width: 32px; height: 32px;
+    border: none; background: transparent;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+}
+.modal-close:hover { background: var(--bg-soft); }
+.modal-close svg { width: 16px; height: 16px; stroke: var(--ink-soft); }
+
+/* ============ INTERVENTIONS LIST ============ */
+.intervention-card {
+    padding: 16px 20px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+}
+.intervention-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.intervention-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+}
+.intervention-date { font-size: 13px; color: var(--ink-mute); }
+.intervention-desc { color: var(--ink-soft); margin-bottom: 8px; }
+.intervention-notes {
+    padding: 10px 14px; background: var(--bg-soft);
+    border-left: 2px solid var(--honey);
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-top: 8px;
+}
+.photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.photo-thumb {
+    width: 80px; height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid var(--line);
+}
+
+/* ============ INVENTORY ============ */
+.inv-section { margin-bottom: 28px; }
+.inv-section-title {
+    font-family: var(--serif);
+    font-size: 18px; font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--ink);
+}
+.inv-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.inv-item {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+}
+.inv-item-info { flex: 1; min-width: 0; }
+.inv-item-label {
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 2px;
+}
+.inv-item-value { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); }
+.inv-item-unit { font-size: 12px; color: var(--ink-mute); margin-left: 4px; }
+.inv-controls { display: flex; gap: 4px; }
+.inv-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    display: grid; place-items: center;
+    font-weight: 600;
+    color: var(--ink-soft);
+}
+.inv-btn:hover { background: var(--bg-soft); }
+
+/* ============ DASHBOARD ============ */
+.dash-stats {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-bottom: 24px;
+}
+.dash-stat {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+}
+.dash-stat-val { font-family: var(--serif); font-size: 32px; font-weight: 500; line-height: 1; }
+.dash-stat-lbl { font-size: 12px; color: var(--ink-mute); margin-top: 6px; text-transform: uppercase; letter-spacing: .08em; }
+
+/* ============ CHAT ============ */
+.chat {
+    display: flex; flex-direction: column;
+    height: calc(100vh - 240px); min-height: 400px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.chat-messages { flex: 1; overflow-y: auto; padding: 20px; }
+.msg { margin-bottom: 14px; max-width: 85%; }
+.msg.user { margin-left: auto; }
+.msg-bubble {
+    padding: 10px 14px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+    color: var(--ink);
+    font-size: 14px; line-height: 1.5;
+    white-space: pre-wrap; word-wrap: break-word;
+}
+.msg.user .msg-bubble { background: var(--ink); color: var(--bg-elev); }
+.chat-input-row {
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    display: flex; gap: 8px;
+}
+.chat-input {
+    flex: 1; padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    background: var(--bg);
+}
+.chat-input:focus { outline: none; border-color: var(--ink); }
+
+/* ============ FRAMES ============ */
+.frames-bar {
+    display: flex; gap: 4px;
+    padding: 10px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    margin-top: 14px;
+    overflow-x: auto;
+}
+.frame-cell {
+    flex: 1; min-width: 28px; height: 60px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink-mute);
+    cursor: pointer;
+    transition: all .12s;
+}
+.frame-cell:hover { border-color: var(--ink-soft); }
+.frame-cell[data-type="couvain"] { background: #ffd9a8; border-color: #e0a366; color: #6b3f12; }
+.frame-cell[data-type="reserve"] { background: #fff0a3; border-color: #d4b045; color: #5a4012; }
+.frame-cell[data-type="nouveau"] { background: #d8c8eb; border-color: #9b85bc; color: #3f2c5c; }
+.frame-cell[data-type="vide"] { background: #f4f1ea; border-color: var(--line-strong); }
+.frame-cell[data-type="partition"] { background: #c9b8a3; border-color: #8d6e63; color: #fff; }
+
+/* ============ ALERTS BANNER ============ */
+.banner {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 1px solid;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+}
+.banner.info { background: rgba(74,122,156,.08); border-color: rgba(74,122,156,.2); color: var(--info); }
+.banner.warn { background: rgba(200,145,100,.08); border-color: rgba(200,145,100,.25); color: var(--warn); }
+.banner.alert { background: rgba(194,84,80,.08); border-color: rgba(194,84,80,.25); color: var(--alert); }
+
+/* ============ EMPTY STATE ============ */
+.empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--ink-mute);
+}
+.empty-title { font-family: var(--serif); font-size: 20px; color: var(--ink-soft); margin-bottom: 6px; }
+.empty-text { font-size: 14px; margin-bottom: 20px; }
+
+/* ============ OBSERVATION TEMPLATE ============ */
+.obs-template {
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+.obs-section { margin-bottom: 14px; }
+.obs-section:last-child { margin-bottom: 0; }
+.obs-section h5 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--honey-deep);
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.obs-section ul { list-style: none; padding-left: 0; }
+.obs-section li {
+    font-size: 13px; color: var(--ink-soft);
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+}
+.obs-section li::before {
+    content: ""; position: absolute; left: 0; top: 11px;
+    width: 6px; height: 1px; background: var(--ink-mute);
+}
+
+.voice-status {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: rgba(200,84,80,.06);
+    color: var(--alert);
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.voice-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--alert); animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+    .header { padding: 0 14px; height: 60px; }
+    .brand-name { font-size: 18px; }
+    .brand-tag { display: none; }
+    .main { padding: 20px 14px 80px; }
+    .section-title { font-size: 26px; }
+    .form-row { grid-template-columns: 1fr; }
+    .hive-row { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .modal { max-width: 100%; max-height: calc(100vh - 32px); }
+    .modal-bg { padding: 16px 12px; }
+    .modal-body { padding: 20px; }
+    .modal-head, .modal-foot { padding: 16px 20px; }
+    .dash-stats { grid-template-columns: repeat(2, 1fr); }
+    .hive-stats { grid-template-columns: repeat(3, 1fr); }
+    .inv-grid { grid-template-columns: 1fr 1fr; }
+    .frame-cell { height: 50px; font-size: 10px; }
+}
+@media (max-width: 420px) {
+    .inv-grid { grid-template-columns: 1fr; }
+    .photo-thumb { width: 70px; height: 70px; }
+}
+
+/* hidden helpers */
+.hidden { display: none !important; }
+.row { display: flex; align-items: center; gap: 8px; }
+.row.wrap { flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.spacer { flex: 1; }
+.muted { color: var(--ink-mute); }
+.center { text-align: center; }
+
+/* fullscreen photo viewer */
+.photo-viewer {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 300;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+}
+.photo-viewer.active { display: flex; }
+.photo-viewer img { max-width: 100%; max-height: 100%; }
+.photo-viewer-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 44px; height: 44px;
+    border-radius: 50%; border: none;
+    background: rgba(255,255,255,.1);
+    color: white;
+    display: grid; place-items: center;
+}
+.photo-viewer-close:hover { background: rgba(255,255,255,.2); }
+</style>
+</head>
+<body>
+
+<header class="header">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <div class="brand">
+        <div class="brand-bee" id="brandBee"></div>
+        <div>
+            <div class="brand-name" id="brandName">Suivi Apicole</div>
+            <div class="brand-tag" id="brandTag">Carnet d'apiculteur</div>
+        </div>
+    </div>
+</header>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+        <h2>Navigation</h2>
+        <button class="sidebar-close" onclick="closeSidebar()" aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <nav class="nav">
+        <div class="nav-section">Vue d'ensemble</div>
+        <a class="nav-item" href="#dashboard" data-route="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Tableau de bord
+        </a>
+        <div class="nav-section">Rucher</div>
+        <a class="nav-item" href="#ruches" data-route="ruches">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6"/><path d="M5 8v12h14V8"/><path d="M9 13h6M9 17h6"/></svg>
+            Mes ruches
+        </a>
+        <a class="nav-item" href="#cadres" data-route="cadres">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M11 3v18M15 3v18"/></svg>
+            Cadres
+        </a>
+        <a class="nav-item" href="#interventions" data-route="interventions">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h2a8 8 0 0 1 8 8v0a8 8 0 0 1-8 8h-2"/><path d="M3 12h12M9 6l-6 6 6 6"/></svg>
+            Interventions
+        </a>
+        <a class="nav-item" href="#inventaire" data-route="inventaire">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
+            Inventaire
+        </a>
+        <div class="nav-section">Assistance</div>
+        <a class="nav-item" href="#dr-abeille" data-route="dr-abeille">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V18a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-3.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7z"/></svg>
+            Conseil expert
+        </a>
+        <a class="nav-item" href="#flore" data-route="flore">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12c0-3 2-5 5-5s5 2 5 5"/><path d="M12 12c0-3-2-5-5-5s-5 2-5 5"/><circle cx="12" cy="8" r="2"/></svg>
+            Flore & Faune
+        </a>
+    </nav>
+    <div class="sidebar-foot" id="sidebarFoot">
+        Suivi Apicole · v2.0
+    </div>
+</aside>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<main class="main">
+    <!-- DASHBOARD -->
+    <section class="section" id="section-dashboard">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Tableau de bord</h1>
+                <div class="section-sub" id="dashSub"></div>
+            </div>
+        </div>
+        <div class="dash-stats" id="dashStats"></div>
+        <div id="dashAlerts"></div>
+        <div id="dashHives"></div>
+    </section>
+
+    <!-- HIVES -->
+    <section class="section" id="section-ruches">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Mes ruches</h1>
+                <div class="section-sub">Suivi détaillé de chaque colonie</div>
+            </div>
+            <button class="btn btn-primary" onclick="openHiveCreate()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Ajouter une ruche
+            </button>
+        </div>
+        <div id="hivesList" class="grid"></div>
+    </section>
+
+    <!-- FRAMES -->
+    <section class="section" id="section-cadres">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Cadres</h1>
+                <div class="section-sub">Visualisation des cadres par ruche</div>
+            </div>
+        </div>
+        <div id="framesContent"></div>
+    </section>
+
+    <!-- INTERVENTIONS -->
+    <section class="section" id="section-interventions">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Journal d'interventions</h1>
+                <div class="section-sub">Historique des opérations</div>
+            </div>
+            <button class="btn btn-primary" onclick="openInterventionModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Nouvelle intervention
+            </button>
+        </div>
+        <div id="interventionsList"></div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section class="section" id="section-inventaire">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Inventaire</h1>
+                <div class="section-sub">Cadres, équipements, nourriture</div>
+            </div>
+        </div>
+        <div id="inventoryContent"></div>
+    </section>
+
+    <!-- DR ABEILLE -->
+    <section class="section" id="section-dr-abeille">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Conseil expert</h1>
+                <div class="section-sub">Assistant apicole — apiculture douce</div>
+            </div>
+        </div>
+        <div class="chat">
+            <div class="chat-messages" id="aiMessages">
+                <div class="msg">
+                    <div class="msg-bubble">Bonjour. Posez-moi vos questions sur la conduite douce de votre rucher : observation, traitements naturels, prévention, biologie de la colonie…</div>
+                </div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="aiInput" placeholder="Votre question..." onkeydown="if(event.key==='Enter') sendAIMessage()">
+                <button class="btn btn-primary" onclick="sendAIMessage()">Envoyer</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLORE -->
+    <section class="section" id="section-flore">
+        <div class="section-head">
+            <div>
+                <h1 class="section-title">Flore & Faune</h1>
+                <div class="section-sub">Identifier plantes mellifères et insectes</div>
+            </div>
+            <button class="btn" onclick="generateFloraSummary()">Résumé</button>
+        </div>
+        <div class="chat">
+            <div class="chat-messages" id="floraMessages">
+                <div class="msg">
+                    <div class="msg-bubble">Décrivez une plante, un insecte, ou envoyez une photo pour identification.</div>
+                </div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="floraInput" placeholder="Décrire..." onkeydown="if(event.key==='Enter') sendFloraMessage()">
+                <input type="file" id="floraPhoto" accept="image/*" hidden onchange="sendFloraPhoto(event)">
+                <button class="btn btn-icon" onclick="document.getElementById('floraPhoto').click()" title="Photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M9 6l1.5-2h3L15 6"/></svg>
+                </button>
+                <button class="btn btn-primary" onclick="sendFloraMessage()">Envoyer</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- =================================================
+     MODALS
+     ================================================= -->
+
+<!-- Hive create modal -->
+<div class="modal-bg" id="hiveCreateModal" data-modal="hiveCreate">
+    <div class="modal">
+        <div class="modal-head">
+            <h2 class="modal-title">Nouvelle ruche</h2>
+            <button class="modal-close" onclick="closeModal('hiveCreate')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-input" id="newHiveName" placeholder="Ruche n°1">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">État</label>
+                        <select class="form-select" id="newHiveState">
+                            <option value="install">À installer</option>
+                            <option value="active" selected>Active</option>
+                            <option value="weak">Faible</option>
+                            <option value="alert">En alerte</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="newHiveType">
+                            <option value="dadant8">Dadant 8 cadres</option>
+                            <option value="dadant10" selected>Dadant 10 cadres</option>
+                            <option value="warre">Warré</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('hiveCreate')">Annuler</button>
+            <button class="btn btn-primary" onclick="createHive()">Créer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Intervention modal -->
+<div class="modal-bg" id="interventionModal" data-modal="intervention">
+    <div class="modal">
+        <div class="modal-head">
+            <h2 class="modal-title">Nouvelle intervention</h2>
+            <button class="modal-close" onclick="closeModal('intervention')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Ruches concernées</label>
+                    <div class="hive-chips" id="intervHiveChips"></div>
+                    <div class="form-help">Cliquer pour sélectionner. Une intervention sera créée pour chaque ruche.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type d'intervention</label>
+                    <select class="form-select" id="intervType">
+                        <option value="observation">Observation</option>
+                        <option value="traitement">Traitement</option>
+                        <option value="recolte">Récolte</option>
+                        <option value="ajout_cadre">Ajout de cadre</option>
+                        <option value="echange_cadre">Échange de cadre</option>
+                        <option value="suppression_cadre">Suppression de cadre</option>
+                        <option value="division">Division</option>
+                        <option value="mise_ruche">Mise en ruche</option>
+                        <option value="transfert">Transfert</option>
+                        <option value="nourrissage">Nourrissage</option>
+                        <option value="piege_frelons">Piège à frelons</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" id="intervDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure</label>
+                        <select class="form-select" id="intervHour"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <div class="row wrap" style="gap:8px; margin-bottom:8px;">
+                        <button type="button" class="btn btn-sm" onclick="toggleObservationTemplate()">Modèle d'observation</button>
+                        <button type="button" class="btn btn-sm" id="voiceStartBtn" onclick="startVoice()">Dictée vocale</button>
+                        <button type="button" class="btn btn-sm btn-danger hidden" id="voiceStopBtn" onclick="stopVoice()">Arrêter</button>
+                    </div>
+                    <div id="voiceStatus" class="voice-status hidden">
+                        <div class="voice-pulse"></div>
+                        Enregistrement en cours...
+                    </div>
+                    <div id="obsTemplate" class="obs-template hidden"></div>
+                    <textarea class="form-textarea" id="intervDesc" placeholder="Décrivez votre observation..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes complémentaires</label>
+                    <textarea class="form-textarea" id="intervNotes"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Photos</label>
+                    <input type="file" class="form-input" id="intervPhotos" multiple accept="image/*" onchange="previewIntervPhotos(event)">
+                    <div id="intervPhotosPreview" class="photo-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('intervention')">Annuler</button>
+            <button class="btn btn-primary" onclick="saveInterventions()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Frame edit modal -->
+<div class="modal-bg" id="frameModal" data-modal="frame">
+    <div class="modal">
+        <div class="modal-head">
+            <h2 class="modal-title" id="frameModalTitle">Cadre</h2>
+            <button class="modal-close" onclick="closeModal('frame')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="modal-body" id="frameModalBody"></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('frame')">Annuler</button>
+            <button class="btn btn-primary" id="frameSaveBtn" onclick="saveFrame()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Photo viewer -->
+<div class="photo-viewer" id="photoViewer" onclick="closePhotoViewer()">
+    <button class="photo-viewer-close" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <img id="photoViewerImg" alt="">
+</div>
+
+<script>
+// =====================================================
+// PRODUCT NAMES — generated at load time
+// Names mix bee + bi (bisexual, binary, etc.)
+// Each name comes with a pride flag pattern as bee stripes
+// =====================================================
+const APP_NAMES = [
+    { name: "Bee-Sexuel", tag: "Le butineur libre", flag: ["#d60270","#9b4f96","#0038a8"] }, // bisexual flag
+    { name: "Non-Beenaire", tag: "Au-delà des cases", flag: ["#fcf434","#ffffff","#9c59d1","#2c2c2c"] }, // nonbinary
+    { name: "Bee-Cause", tag: "Pour le climat", flag: ["#ff9900","#ffd700","#33b333"] }, // earth tones
+    { name: "Pan-Bee", tag: "L'amour pollinise tout", flag: ["#ff218c","#ffd800","#21b1ff"] }, // pan
+    { name: "Drag-Bee", tag: "Glamour à six pattes", flag: ["#ff5f9e","#ffc0cb","#ffffff","#a3d8e7"] }, // drag-inspired
+    { name: "Trans-Bee", tag: "Vrai miel intérieur", flag: ["#5bcefa","#f5a9b8","#ffffff","#f5a9b8","#5bcefa"] }, // trans
+    { name: "Lesbee", tag: "Reines unies", flag: ["#d52d00","#ef7627","#ff9a56","#ffffff","#d362a4","#b55690","#a30262"] }, // lesbian
+    { name: "Bee-LGBT", tag: "Tout le rucher est bienvenu", flag: ["#e40303","#ff8c00","#ffed00","#008026","#004cff","#732982"] }, // rainbow
+    { name: "Aro-Bee", tag: "Solo et fier", flag: ["#3da542","#a7d379","#ffffff","#a9a9a9","#000000"] }, // aro
+    { name: "Ace-Bee", tag: "Le miel sans agitation", flag: ["#000000","#a3a3a3","#ffffff","#800080"] }, // ace
+    { name: "Pollie-Amour", tag: "Plusieurs fleurs, un cœur", flag: ["#ff0000","#0000ff","#000000","#ffd700"] }, // poly
+    { name: "Bee-Naire", tag: "Code génétique du miel", flag: ["#000000","#ffffff"] }, // binary
+    { name: "Apis-tème", tag: "Un système de soins", flag: ["#d4a574","#b8884d","#5e6b4f"] }, // honey/moss
+    { name: "Bzz-Beelle", tag: "Vibrations de printemps", flag: ["#f4d35e","#d4a574","#5e6b4f"] },
+    { name: "Bee-llissime", tag: "L'élégance ouvrière", flag: ["#1a1a1a","#d4a574","#fafaf7"] },
+    { name: "Reine du Bal", tag: "Une seule règne", flag: ["#9b4f96","#d4a574","#1a1a1a"] }
+];
+
+const MONTH_NAMES = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+// Pick a random app name and render bee
+function pickAppName() {
+    const n = APP_NAMES[Math.floor(Math.random() * APP_NAMES.length)];
+    document.getElementById('brandName').textContent = n.name;
+    document.getElementById('brandTag').textContent = n.tag;
+    document.getElementById('brandBee').innerHTML = renderBeeSVG(n.flag);
+    document.title = n.name + " — Suivi apicole";
+}
+
+function renderBeeSVG(stripes) {
+    // Bee body with horizontal stripes using flag colors
+    // 36x36 viewBox
+    const stripeCount = stripes.length;
+    const bodyW = 22, bodyH = 18;
+    const bodyX = 7, bodyY = 11;
+    const stripeH = bodyH / stripeCount;
+    let stripeRects = '';
+    for (let i = 0; i < stripeCount; i++) {
+        stripeRects += `<rect x="${bodyX}" y="${bodyY + i * stripeH}" width="${bodyW}" height="${stripeH}" fill="${stripes[i]}"/>`;
+    }
+    return `
+    <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <defs>
+            <clipPath id="beeBody"><ellipse cx="18" cy="20" rx="11" ry="9"/></clipPath>
+        </defs>
+        <!-- wings -->
+        <ellipse cx="13" cy="11" rx="5" ry="6.5" fill="rgba(255,255,255,.7)" stroke="#1a1a1a" stroke-width="1"/>
+        <ellipse cx="23" cy="11" rx="5" ry="6.5" fill="rgba(255,255,255,.7)" stroke="#1a1a1a" stroke-width="1"/>
+        <!-- body with stripes via clip -->
+        <g clip-path="url(#beeBody)">
+            ${stripeRects}
+        </g>
+        <ellipse cx="18" cy="20" rx="11" ry="9" fill="none" stroke="#1a1a1a" stroke-width="1.4"/>
+        <!-- head -->
+        <circle cx="18" cy="9" r="4" fill="#1a1a1a"/>
+        <!-- eye -->
+        <circle cx="19.5" cy="8.5" r=".7" fill="#fff"/>
+        <!-- antennae -->
+        <path d="M16.5 6 Q15 3 14 3" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
+        <path d="M19.5 6 Q21 3 22 3" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
+        <circle cx="14" cy="3" r=".8" fill="#1a1a1a"/>
+        <circle cx="22" cy="3" r=".8" fill="#1a1a1a"/>
+    </svg>`;
+}
+
+// =====================================================
+// DATA
+// =====================================================
+let ruches = JSON.parse(localStorage.getItem('ruches') || 'null') || [
+    { id: 1, name: "Ruche 1", state: "active", type: "dadant10", queen: "", framesOccupied: 0, varroaCount: 0, createdAt: Date.now() }
+];
+let interventionsParRuche = JSON.parse(localStorage.getItem('interventionsParRuche') || '{}');
+let cadresParRuche = JSON.parse(localStorage.getItem('cadresParRuche') || '{}');
+let inventaire = JSON.parse(localStorage.getItem('inventaire') || 'null') || {
+    cadres_files: 10,
+    cadres_cires_corps: 15,
+    cadres_cires_hausse: 8,
+    ruches_complete: 2,
+    ruchettes: 1,
+    grille_reine: 2,
+    partitions: 3,
+    sirop_litres: 20,
+    candy_kg: 5,
+    feuilles_cire: 50,
+    nourrisseurs: 4
+};
+let floraMessages = JSON.parse(localStorage.getItem('floraMessages') || '[]');
+
+const STATE_LABELS = {
+    install: { label: "À installer", cls: "install" },
+    active: { label: "Active", cls: "" },
+    weak: { label: "Faible", cls: "weak" },
+    alert: { label: "En alerte", cls: "alert" }
+};
+
+const TYPE_INTERVENTION = {
+    observation: "Observation",
+    traitement: "Traitement",
+    recolte: "Récolte",
+    ajout_cadre: "Ajout de cadre",
+    echange_cadre: "Échange de cadre",
+    suppression_cadre: "Suppression de cadre",
+    division: "Division",
+    mise_ruche: "Mise en ruche",
+    transfert: "Transfert",
+    nourrissage: "Nourrissage",
+    piege_frelons: "Piège à frelons"
+};
+
+const HIVE_TYPES = { dadant8: "Dadant 8", dadant10: "Dadant 10", warre: "Warré", autre: "Autre" };
+
+const OBSERVATION_TEMPLATE = {
+    cadres: { label: "État des cadres", points: ["Bâti régulier et dense ?","Cadres bien construits ou imparfaits ?"] },
+    couvain: { label: "Couvain", points: ["Surface couverte (% du cadre) ?","Stade : œufs / larves / operculé ?","Motif régulier ou dispersé ?"] },
+    reserves: { label: "Réserves", points: ["Pollen présent et en quelle quantité ?","Miel présent et en quelle quantité ?","Cadres vides ?"] },
+    force: { label: "Force de la colonie", points: ["Population : faible / moyenne / forte ?","Recouvrement des cadres en % ?","Comportement (calme, agressif) ?"] },
+    reine: { label: "Reine", points: ["Aperçue ?","Jeune ou âgée ?","Ponte active ?"] },
+    sante: { label: "Santé", points: ["Varroas visibles ?","Maladies observées ?","Comportement anormal ?"] }
+};
+
+const INVENTORY_GROUPS = [
+    { title: "Cadres", items: [
+        { key: "cadres_files", label: "Cadres filés", unit: "" },
+        { key: "cadres_cires_corps", label: "Cadres cirés (corps)", unit: "" },
+        { key: "cadres_cires_hausse", label: "Cadres cirés (hausse)", unit: "" }
+    ]},
+    { title: "Ruches & équipements", items: [
+        { key: "ruches_complete", label: "Ruches complètes", unit: "" },
+        { key: "ruchettes", label: "Ruchettes", unit: "" },
+        { key: "grille_reine", label: "Grilles à reine", unit: "" },
+        { key: "partitions", label: "Partitions", unit: "" }
+    ]},
+    { title: "Nourriture", items: [
+        { key: "sirop_litres", label: "Sirop", unit: "L" },
+        { key: "candy_kg", label: "Candy", unit: "kg" }
+    ]},
+    { title: "Matières premières", items: [
+        { key: "feuilles_cire", label: "Feuilles de cire", unit: "" }
+    ]},
+    { title: "Accessoires", items: [
+        { key: "nourrisseurs", label: "Nourrisseurs", unit: "" }
+    ]}
+];
+
+const ROUTES = ["dashboard","ruches","cadres","interventions","inventaire","dr-abeille","flore"];
+
+// =====================================================
+// PERSISTENCE
+// =====================================================
+function save() {
+    localStorage.setItem('ruches', JSON.stringify(ruches));
+    localStorage.setItem('interventionsParRuche', JSON.stringify(interventionsParRuche));
+    localStorage.setItem('cadresParRuche', JSON.stringify(cadresParRuche));
+    localStorage.setItem('inventaire', JSON.stringify(inventaire));
+    localStorage.setItem('floraMessages', JSON.stringify(floraMessages));
+}
+
+// =====================================================
+// ROUTING
+// =====================================================
+function navigate(route) {
+    if (!ROUTES.includes(route)) route = 'dashboard';
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-' + route).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.route === route));
+    if (location.hash !== '#' + route) location.hash = '#' + route;
+    closeSidebar();
+    // render
+    if (route === 'dashboard') renderDashboard();
+    if (route === 'ruches') renderHives();
+    if (route === 'cadres') renderFrames();
+    if (route === 'interventions') renderInterventions();
+    if (route === 'inventaire') renderInventory();
+}
+
+window.addEventListener('hashchange', () => {
+    const r = location.hash.replace('#','') || 'dashboard';
+    navigate(r);
+});
+
+// =====================================================
+// SIDEBAR
+// =====================================================
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+}
+
+// =====================================================
+// MODALS — escape + click outside to close
+// =====================================================
+const openModals = new Set();
+function openModal(id) {
+    document.getElementById(id + 'Modal').classList.add('active');
+    openModals.add(id);
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    const m = document.getElementById(id + 'Modal');
+    if (m) m.classList.remove('active');
+    openModals.delete(id);
+    if (openModals.size === 0) document.body.style.overflow = '';
+}
+function closeAllModals() {
+    Array.from(openModals).forEach(id => closeModal(id));
+}
+
+// Click outside (on overlay background) to close
+document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('modal-bg')) {
+        const id = e.target.dataset.modal;
+        if (id) closeModal(id);
+    }
+});
+// Escape closes top modal or sidebar
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (openModals.size > 0) {
+            closeAllModals();
+        } else if (document.getElementById('sidebar').classList.contains('open')) {
+            closeSidebar();
+        } else if (document.getElementById('photoViewer').classList.contains('active')) {
+            closePhotoViewer();
+        }
+    }
+});
+
+// =====================================================
+// DASHBOARD
+// =====================================================
+function renderDashboard() {
+    // sub: today
+    const now = new Date();
+    document.getElementById('dashSub').textContent = `${now.getDate()} ${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
+    
+    const totalInterv = Object.values(interventionsParRuche).reduce((s,a) => s + a.length, 0);
+    const totalVarroas = ruches.reduce((s,r) => s + (r.varroaCount || 0), 0);
+    const alerts = ruches.flatMap(r => calcAlerts(r));
+    
+    document.getElementById('dashStats').innerHTML = `
+        <div class="dash-stat"><div class="dash-stat-val">${ruches.length}</div><div class="dash-stat-lbl">Ruches</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${totalInterv}</div><div class="dash-stat-lbl">Interventions</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${totalVarroas}</div><div class="dash-stat-lbl">Varroas/24h</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${alerts.length}</div><div class="dash-stat-lbl">Alertes</div></div>
+    `;
+    
+    document.getElementById('dashAlerts').innerHTML = alerts.length === 0 ? '' :
+        '<div class="banner warn">'
+        + svgIcon('alert')
+        + `<div><strong>${alerts.length} alerte${alerts.length>1?'s':''}</strong> — voir les ruches concernées dans l'onglet Ruches.</div></div>`;
+    
+    document.getElementById('dashHives').innerHTML = ruches.length === 0
+        ? '<div class="empty"><div class="empty-title">Aucune ruche</div><div class="empty-text">Commencez par ajouter votre première ruche.</div><button class="btn btn-primary" onclick="openHiveCreate()">Ajouter une ruche</button></div>'
+        : `<h2 class="inv-section-title" style="margin-top:24px;">Aperçu des ruches</h2><div class="grid">${ruches.map(renderHiveCard).join('')}</div>`;
+}
+
+function calcAlerts(r) {
+    const a = [];
+    const intervs = interventionsParRuche[r.id] || [];
+    const lastInterv = intervs[0];
+    const daysSince = lastInterv ? Math.floor((Date.now() - new Date(lastInterv.timestamp)) / 86400000) : 999;
+    if ((r.varroaCount || 0) > 5) a.push({ level: 'alert', text: 'Charge varroas critique' });
+    else if ((r.varroaCount || 0) > 2) a.push({ level: 'warn', text: 'Surveiller les varroas' });
+    if (r.state === 'weak') a.push({ level: 'warn', text: 'Colonie affaiblie' });
+    if (r.state === 'alert') a.push({ level: 'alert', text: 'Ruche en alerte' });
+    if (!r.queen && r.state !== 'install') a.push({ level: 'warn', text: 'Reine non identifiée' });
+    if (daysSince > 14 && r.state !== 'install') a.push({ level: 'warn', text: 'Pas de visite depuis 2 semaines' });
+    return a;
+}
+
+// =====================================================
+// HIVES
+// =====================================================
+let hiveEditMode = {}; // rucheId -> bool
+
+function renderHives() {
+    const list = document.getElementById('hivesList');
+    if (ruches.length === 0) {
+        list.innerHTML = '<div class="empty"><div class="empty-title">Aucune ruche</div><div class="empty-text">Ajoutez votre première colonie.</div></div>';
+        return;
+    }
+    list.innerHTML = ruches.map(renderHiveCardDetailed).join('');
+}
+
+function renderHiveCard(r) {
+    const state = STATE_LABELS[r.state] || STATE_LABELS.active;
+    const alerts = calcAlerts(r);
+    const intervCount = (interventionsParRuche[r.id] || []).length;
+    return `
+    <div class="card hive" onclick="navigateToHive(${r.id})">
+        <div class="hive-head">
+            <div class="hive-name">${escapeHtml(r.name)}</div>
+            <span class="hive-state ${state.cls}"><span class="dot"></span>${state.label}</span>
+        </div>
+        <div class="muted" style="font-size:13px;">${HIVE_TYPES[r.type] || ''}</div>
+        <div class="hive-stats">
+            <div class="hive-stat">
+                <div class="hive-stat-val">${r.framesOccupied || 0}</div>
+                <div class="hive-stat-lbl">Cadres</div>
+            </div>
+            <div class="hive-stat">
+                <div class="hive-stat-val">${r.varroaCount || 0}</div>
+                <div class="hive-stat-lbl">Varroas/24h</div>
+            </div>
+            <div class="hive-stat">
+                <div class="hive-stat-val">${intervCount}</div>
+                <div class="hive-stat-lbl">Interventions</div>
+            </div>
+        </div>
+        ${alerts.length ? '<div class="alerts-row">' + alerts.map(a => `<span class="alert-chip ${a.level === 'alert' ? 'alert' : ''}">${svgIcon('alert')}${a.text}</span>`).join('') + '</div>' : ''}
+    </div>`;
+}
+
+function renderHiveCardDetailed(r) {
+    const editing = !!hiveEditMode[r.id];
+    const state = STATE_LABELS[r.state] || STATE_LABELS.active;
+    const alerts = calcAlerts(r);
+    return `
+    <div class="card hive" data-rid="${r.id}">
+        <div class="hive-head">
+            ${editing
+                ? `<input type="text" class="form-input" value="${escapeHtml(r.name)}" onchange="updateHive(${r.id},'name',this.value)" style="font-family:var(--serif);font-size:18px;font-weight:500;max-width:240px;">`
+                : `<div class="hive-name">${escapeHtml(r.name)}</div>`
+            }
+            <div class="row">
+                <span class="hive-state ${state.cls}"><span class="dot"></span>${state.label}</span>
+                <button class="btn btn-sm btn-ghost btn-icon" onclick="toggleHiveEdit(${r.id})" title="${editing ? 'Terminer' : 'Modifier'}">
+                    ${editing ? svgIcon('check') : svgIcon('edit')}
+                </button>
+            </div>
+        </div>
+        <div class="hive-row" style="margin-top:14px;">
+            <div class="field">
+                <span class="field-label">État</span>
+                ${editing
+                    ? `<select class="form-select" onchange="updateHive(${r.id},'state',this.value)">
+                        ${Object.entries(STATE_LABELS).map(([v,o]) => `<option value="${v}" ${r.state===v?'selected':''}>${o.label}</option>`).join('')}
+                    </select>`
+                    : `<div class="field-value">${state.label}</div>`
+                }
+            </div>
+            <div class="field">
+                <span class="field-label">Type</span>
+                ${editing
+                    ? `<select class="form-select" onchange="updateHive(${r.id},'type',this.value)">
+                        ${Object.entries(HIVE_TYPES).map(([v,o]) => `<option value="${v}" ${r.type===v?'selected':''}>${o}</option>`).join('')}
+                    </select>`
+                    : `<div class="field-value">${HIVE_TYPES[r.type] || '—'}</div>`
+                }
+            </div>
+            <div class="field">
+                <span class="field-label">Reine</span>
+                ${editing
+                    ? `<input class="form-input" value="${escapeHtml(r.queen||'')}" placeholder="ex: 2024 marquée" onchange="updateHive(${r.id},'queen',this.value)">`
+                    : `<div class="field-value">${escapeHtml(r.queen) || '<span class="muted">non renseignée</span>'}</div>`
+                }
+            </div>
+            <div class="field">
+                <span class="field-label">Cadres occupés</span>
+                ${editing
+                    ? `<input class="form-input" type="number" min="0" value="${r.framesOccupied||0}" onchange="updateHive(${r.id},'framesOccupied',+this.value)">`
+                    : `<div class="field-value">${r.framesOccupied || 0}</div>`
+                }
+            </div>
+            <div class="field">
+                <span class="field-label">Varroas / 24h</span>
+                ${editing
+                    ? `<input class="form-input" type="number" min="0" value="${r.varroaCount||0}" onchange="updateHive(${r.id},'varroaCount',+this.value)">`
+                    : `<div class="field-value">${r.varroaCount || 0}</div>`
+                }
+            </div>
+        </div>
+        ${alerts.length ? '<div class="alerts-row">' + alerts.map(a => `<span class="alert-chip ${a.level === 'alert' ? 'alert' : ''}">${svgIcon('alert')}${a.text}</span>`).join('') + '</div>' : ''}
+        ${editing ? `<div class="row" style="margin-top:14px;justify-content:flex-end;"><button class="btn btn-danger btn-sm" onclick="deleteHive(${r.id})">Supprimer la ruche</button></div>` : ''}
+    </div>`;
+}
+
+function navigateToHive(id) {
+    navigate('ruches');
+}
+
+function toggleHiveEdit(id) {
+    hiveEditMode[id] = !hiveEditMode[id];
+    renderHives();
+}
+
+function updateHive(id, key, value) {
+    const r = ruches.find(x => x.id === id);
+    if (!r) return;
+    r[key] = value;
+    save();
+    // Don't re-render: keeps focus / edit mode
+}
+
+function deleteHive(id) {
+    if (!confirm('Supprimer cette ruche et toutes ses données ?')) return;
+    ruches = ruches.filter(r => r.id !== id);
+    delete interventionsParRuche[id];
+    delete cadresParRuche[id];
+    delete hiveEditMode[id];
+    save();
+    renderHives();
+}
+
+function openHiveCreate() {
+    document.getElementById('newHiveName').value = `Ruche ${ruches.length + 1}`;
+    document.getElementById('newHiveState').value = 'active';
+    document.getElementById('newHiveType').value = 'dadant10';
+    openModal('hiveCreate');
+}
+
+function createHive() {
+    const name = document.getElementById('newHiveName').value.trim();
+    if (!name) return alert('Donnez un nom à la ruche');
+    const id = Date.now();
+    ruches.push({
+        id, name,
+        state: document.getElementById('newHiveState').value,
+        type: document.getElementById('newHiveType').value,
+        queen: '', framesOccupied: 0, varroaCount: 0,
+        createdAt: Date.now()
+    });
+    save();
+    closeModal('hiveCreate');
+    renderHives();
+}
+
+// =====================================================
+// FRAMES
+// =====================================================
+function getFrameCount(type) {
+    if (type === 'dadant8') return 8;
+    if (type === 'dadant10') return 10;
+    if (type === 'warre') return 8;
+    return 10;
+}
+
+function renderFrames() {
+    const c = document.getElementById('framesContent');
+    if (ruches.length === 0) {
+        c.innerHTML = '<div class="empty"><div class="empty-title">Aucune ruche</div></div>';
+        return;
+    }
+    c.innerHTML = ruches.map(r => {
+        const count = getFrameCount(r.type);
+        const cadres = cadresParRuche[r.id] || [];
+        let cells = '';
+        for (let i = 0; i < count; i++) {
+            const c = cadres.find(x => x.position === i);
+            cells += `<div class="frame-cell" data-type="${c?.type||'vide'}" onclick="openFrameModal(${r.id},${i})">${i+1}</div>`;
+        }
+        return `
+        <div class="card" style="margin-bottom:14px;">
+            <div class="row between">
+                <div>
+                    <div class="hive-name">${escapeHtml(r.name)}</div>
+                    <div class="muted" style="font-size:13px;">${HIVE_TYPES[r.type]||''} · ${count} cadres</div>
+                </div>
+            </div>
+            <div class="frames-bar">${cells}</div>
+        </div>`;
+    }).join('');
+}
+
+let currentFrame = null;
+function openFrameModal(rucheId, position) {
+    currentFrame = { rucheId, position };
+    const cadres = cadresParRuche[rucheId] || [];
+    const c = cadres.find(x => x.position === position) || { type: 'vide', notes: '' };
+    document.getElementById('frameModalTitle').textContent = `Cadre ${position + 1}`;
+    document.getElementById('frameModalBody').innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="frameType">
+                    <option value="vide" ${c.type==='vide'?'selected':''}>Vide</option>
+                    <option value="couvain" ${c.type==='couvain'?'selected':''}>Couvain</option>
+                    <option value="reserve" ${c.type==='reserve'?'selected':''}>Réserve</option>
+                    <option value="nouveau" ${c.type==='nouveau'?'selected':''}>Nouveau</option>
+                    <option value="partition" ${c.type==='partition'?'selected':''}>Partition</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-textarea" id="frameNotes">${escapeHtml(c.notes||'')}</textarea>
+            </div>
+        </div>`;
+    openModal('frame');
+}
+
+function saveFrame() {
+    if (!currentFrame) return;
+    const { rucheId, position } = currentFrame;
+    if (!cadresParRuche[rucheId]) cadresParRuche[rucheId] = [];
+    let c = cadresParRuche[rucheId].find(x => x.position === position);
+    if (!c) {
+        c = { position };
+        cadresParRuche[rucheId].push(c);
+    }
+    c.type = document.getElementById('frameType').value;
+    c.notes = document.getElementById('frameNotes').value;
+    save();
+    closeModal('frame');
+    renderFrames();
+}
+
+// =====================================================
+// INTERVENTIONS
+// =====================================================
+let selectedHives = new Set();
+let intervPhotos = [];
+
+function renderInterventions() {
+    const all = [];
+    Object.entries(interventionsParRuche).forEach(([rid, list]) => {
+        list.forEach(i => all.push({ ...i, rucheId: +rid }));
+    });
+    all.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const c = document.getElementById('interventionsList');
+    if (all.length === 0) {
+        c.innerHTML = '<div class="empty"><div class="empty-title">Aucune intervention</div><div class="empty-text">Commencez par enregistrer une observation.</div></div>';
+        return;
+    }
+    c.innerHTML = all.map(i => {
+        const r = ruches.find(x => x.id === i.rucheId);
+        return `
+        <div class="intervention-card">
+            <div class="intervention-head">
+                <div class="intervention-meta">
+                    <span class="tag">${TYPE_INTERVENTION[i.type] || i.type}</span>
+                    <strong>${r ? escapeHtml(r.name) : 'Ruche supprimée'}</strong>
+                </div>
+                <div class="row" style="gap:6px;">
+                    <span class="intervention-date">${i.date} · ${i.heure}</span>
+                    <button class="btn btn-sm btn-danger btn-icon" onclick="deleteIntervention(${i.rucheId},${i.id})" title="Supprimer">
+                        ${svgIcon('trash')}
+                    </button>
+                </div>
+            </div>
+            <div class="intervention-desc">${escapeHtml(i.description||'')}</div>
+            ${i.notes ? `<div class="intervention-notes">${escapeHtml(i.notes)}</div>` : ''}
+            ${i.photos && i.photos.length ? `<div class="photo-grid">${i.photos.map(p => `<img class="photo-thumb" src="${p}" onclick="openPhoto('${p}')">`).join('')}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function openInterventionModal() {
+    if (ruches.length === 0) {
+        alert('Créez d\'abord une ruche.');
+        return;
+    }
+    selectedHives = new Set([ruches[0].id]);
+    intervPhotos = [];
+    const chips = document.getElementById('intervHiveChips');
+    chips.innerHTML = ruches.map(r =>
+        `<div class="hive-chip ${selectedHives.has(r.id)?'selected':''}" data-rid="${r.id}" onclick="toggleHiveChip(${r.id})">${escapeHtml(r.name)}</div>`
+    ).join('');
+    document.getElementById('intervType').value = 'observation';
+    const now = new Date();
+    document.getElementById('intervDate').value = now.toISOString().slice(0,10);
+    const hourSel = document.getElementById('intervHour');
+    hourSel.innerHTML = Array.from({length:24}).map((_,i) => `<option value="${i}h" ${i===now.getHours()?'selected':''}>${i}h</option>`).join('');
+    document.getElementById('intervDesc').value = '';
+    document.getElementById('intervNotes').value = '';
+    document.getElementById('intervPhotos').value = '';
+    document.getElementById('intervPhotosPreview').innerHTML = '';
+    document.getElementById('obsTemplate').classList.add('hidden');
+    document.getElementById('voiceStatus').classList.add('hidden');
+    openModal('intervention');
+}
+
+function toggleHiveChip(id) {
+    if (selectedHives.has(id)) selectedHives.delete(id);
+    else selectedHives.add(id);
+    document.querySelectorAll('#intervHiveChips .hive-chip').forEach(c => {
+        c.classList.toggle('selected', selectedHives.has(+c.dataset.rid));
+    });
+}
+
+function toggleObservationTemplate() {
+    const el = document.getElementById('obsTemplate');
+    if (el.classList.contains('hidden')) {
+        el.innerHTML = Object.entries(OBSERVATION_TEMPLATE).map(([k,s]) =>
+            `<div class="obs-section"><h5>${s.label}</h5><ul>${s.points.map(p => `<li>${p}</li>`).join('')}</ul></div>`
+        ).join('');
+        el.classList.remove('hidden');
+    } else {
+        el.classList.add('hidden');
+    }
+}
+
+function previewIntervPhotos(e) {
+    intervPhotos = [];
+    const preview = document.getElementById('intervPhotosPreview');
+    preview.innerHTML = '';
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+            intervPhotos.push(ev.target.result);
+            const img = document.createElement('img');
+            img.className = 'photo-thumb';
+            img.src = ev.target.result;
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function saveInterventions() {
+    if (selectedHives.size === 0) return alert('Sélectionnez au moins une ruche.');
+    const desc = document.getElementById('intervDesc').value.trim();
+    if (!desc) return alert('Décrivez votre intervention.');
+    const date = document.getElementById('intervDate').value;
+    const heure = document.getElementById('intervHour').value;
+    const type = document.getElementById('intervType').value;
+    const notes = document.getElementById('intervNotes').value.trim();
+    const dateFr = date.split('-').reverse().join('/');
+    const ts = new Date().toISOString();
+    selectedHives.forEach(rid => {
+        if (!interventionsParRuche[rid]) interventionsParRuche[rid] = [];
+        interventionsParRuche[rid].unshift({
+            id: Date.now() + Math.random(),
+            type, description: desc, notes,
+            date: dateFr, heure,
+            timestamp: ts,
+            photos: [...intervPhotos]
+        });
+    });
+    save();
+    closeModal('intervention');
+    renderInterventions();
+}
+
+function deleteIntervention(rucheId, intId) {
+    if (!confirm('Supprimer cette intervention ?')) return;
+    if (!interventionsParRuche[rucheId]) return;
+    interventionsParRuche[rucheId] = interventionsParRuche[rucheId].filter(i => i.id !== intId);
+    save();
+    renderInterventions();
+}
+
+// =====================================================
+// VOICE
+// =====================================================
+let recognition = null;
+let recording = false;
+
+function startVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return alert("Reconnaissance vocale non disponible sur ce navigateur. Essayez Chrome ou Safari.");
+    if (!recognition) {
+        recognition = new SR();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onstart = () => {
+            recording = true;
+            document.getElementById('voiceStartBtn').classList.add('hidden');
+            document.getElementById('voiceStopBtn').classList.remove('hidden');
+            document.getElementById('voiceStatus').classList.remove('hidden');
+        };
+        recognition.onresult = (e) => {
+            const ta = document.getElementById('intervDesc');
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) {
+                    ta.value += (ta.value && !ta.value.endsWith(' ') ? ' ' : '') + e.results[i][0].transcript.trim();
+                }
+            }
+        };
+        recognition.onend = () => {
+            recording = false;
+            document.getElementById('voiceStartBtn').classList.remove('hidden');
+            document.getElementById('voiceStopBtn').classList.add('hidden');
+            document.getElementById('voiceStatus').classList.add('hidden');
+        };
+        recognition.onerror = (e) => {
+            console.warn('voice err', e);
+            recording = false;
+            document.getElementById('voiceStartBtn').classList.remove('hidden');
+            document.getElementById('voiceStopBtn').classList.add('hidden');
+            document.getElementById('voiceStatus').classList.add('hidden');
+        };
+    }
+    recognition.start();
+}
+function stopVoice() {
+    if (recognition && recording) recognition.stop();
+}
+
+// =====================================================
+// INVENTORY
+// =====================================================
+function renderInventory() {
+    const c = document.getElementById('inventoryContent');
+    c.innerHTML = INVENTORY_GROUPS.map(g => `
+        <div class="inv-section">
+            <h2 class="inv-section-title">${g.title}</h2>
+            <div class="inv-grid">
+                ${g.items.map(it => `
+                    <div class="inv-item">
+                        <div class="inv-item-info">
+                            <div class="inv-item-label">${it.label}</div>
+                            <div class="inv-item-value">${inventaire[it.key] || 0}<span class="inv-item-unit">${it.unit ? ' '+it.unit : ''}</span></div>
+                        </div>
+                        <div class="inv-controls">
+                            <button class="inv-btn" onclick="updateInv('${it.key}',-1)">−</button>
+                            <button class="inv-btn" onclick="updateInv('${it.key}',1)">+</button>
+                        </div>
+                    </div>`).join('')}
+            </div>
+        </div>`).join('');
+}
+
+function updateInv(key, delta) {
+    inventaire[key] = Math.max(0, (inventaire[key] || 0) + delta);
+    save();
+    renderInventory();
+}
+
+// =====================================================
+// AI CHAT (Dr Abeille)
+// =====================================================
+function appendMsg(containerId, content, role = 'assistant') {
+    const c = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'msg ' + (role === 'user' ? 'user' : '');
+    div.innerHTML = `<div class="msg-bubble">${escapeHtml(content)}</div>`;
+    c.appendChild(div);
+    c.scrollTop = c.scrollHeight;
+}
+
+async function sendAIMessage() {
+    const inp = document.getElementById('aiInput');
+    const q = inp.value.trim();
+    if (!q) return;
+    appendMsg('aiMessages', q, 'user');
+    inp.value = '';
+    appendMsg('aiMessages', 'Réflexion en cours…');
+    const lastBubble = document.querySelector('#aiMessages .msg:last-child .msg-bubble');
+    try {
+        const sys = "Tu es un expert en apiculture douce, formé aux ruches Dadant et aux méthodes naturelles. Réponds en français, de façon concise et concrète, en privilégiant les approches respectueuses de la colonie et de l'environnement.";
+        const resp = await callAPI('/api/claude', { message: q, system: sys });
+        lastBubble.textContent = resp.response || resp.error || "Pas de réponse.";
+    } catch (e) {
+        lastBubble.textContent = "Service indisponible. Vérifiez la configuration de la clé API.";
+    }
+}
+
+async function callAPI(endpoint, payload) {
+    const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    return r.json();
+}
+
+// =====================================================
+// FLORA
+// =====================================================
+function renderFlora() {
+    const c = document.getElementById('floraMessages');
+    c.innerHTML = '<div class="msg"><div class="msg-bubble">Décrivez une plante, un insecte, ou envoyez une photo pour identification.</div></div>';
+    floraMessages.forEach(m => {
+        if (m.type === 'photo') {
+            const div = document.createElement('div');
+            div.className = 'msg ' + (m.role === 'user' ? 'user' : '');
+            div.innerHTML = `<div class="msg-bubble"><img src="${m.content}" style="max-width:200px;border-radius:8px;"></div>`;
+            c.appendChild(div);
+        } else {
+            appendMsg('floraMessages', m.content, m.role);
+        }
+    });
+}
+
+async function sendFloraMessage() {
+    const inp = document.getElementById('floraInput');
+    const q = inp.value.trim();
+    if (!q) return;
+    appendMsg('floraMessages', q, 'user');
+    floraMessages.push({ role: 'user', type: 'text', content: q });
+    inp.value = '';
+    appendMsg('floraMessages', 'Recherche en cours…');
+    const lastBubble = document.querySelector('#floraMessages .msg:last-child .msg-bubble');
+    try {
+        const sys = "Tu es un botaniste et entomologiste spécialisé en flore mellifère et faune apicole. Identifie l'espèce mentionnée, indique son intérêt pour les abeilles (mellifère, pollinifère), sa période de floraison/activité, et toute information utile à un apiculteur.";
+        const resp = await callAPI('/api/claude', { message: q, system: sys });
+        const text = resp.response || resp.error || "Pas de réponse.";
+        lastBubble.textContent = text;
+        floraMessages.push({ role: 'assistant', type: 'text', content: text });
+        save();
+    } catch (e) {
+        lastBubble.textContent = "Service indisponible.";
+    }
+}
+
+function sendFloraPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+        const dataUrl = ev.target.result;
+        const c = document.getElementById('floraMessages');
+        const div = document.createElement('div');
+        div.className = 'msg user';
+        div.innerHTML = `<div class="msg-bubble"><img src="${dataUrl}" style="max-width:200px;border-radius:8px;"></div>`;
+        c.appendChild(div);
+        c.scrollTop = c.scrollHeight;
+        floraMessages.push({ role: 'user', type: 'photo', content: dataUrl });
+        appendMsg('floraMessages', 'Analyse de l\'image…');
+        const lastBubble = document.querySelector('#floraMessages .msg:last-child .msg-bubble');
+        try {
+            const base64 = dataUrl.split(',')[1];
+            const sys = "Tu es un botaniste/entomologiste expert en flore mellifère. Identifie l'espèce sur la photo, son intérêt pour les abeilles (mellifère, pollinifère), période d'activité, et conseils pour un apiculteur.";
+            const resp = await callAPI('/api/claude-vision', { imageBase64: base64, prompt: "Identifie cette plante ou cet insecte.", system: sys });
+            const text = resp.response || resp.error || "Pas de réponse.";
+            lastBubble.textContent = text;
+            floraMessages.push({ role: 'assistant', type: 'text', content: text });
+            save();
+        } catch (err) {
+            lastBubble.textContent = "Service indisponible.";
+        }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+}
+
+function generateFloraSummary() {
+    if (floraMessages.length === 0) return alert('Aucune entrée à résumer pour le moment.');
+    const txt = floraMessages.filter(m => m.type === 'text').map(m =>
+        `[${m.role === 'user' ? 'Vous' : 'Expert'}] ${m.content}`
+    ).join('\n\n');
+    navigator.clipboard.writeText(txt).then(() => alert('Résumé copié dans le presse-papier.'));
+}
+
+// =====================================================
+// PHOTO VIEWER
+// =====================================================
+function openPhoto(src) {
+    document.getElementById('photoViewerImg').src = src;
+    document.getElementById('photoViewer').classList.add('active');
+}
+function closePhotoViewer() {
+    document.getElementById('photoViewer').classList.remove('active');
+}
+
+// =====================================================
+// HELPERS
+// =====================================================
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function svgIcon(name) {
+    const icons = {
+        alert: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
+        edit: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+        check: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+        trash: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+    };
+    return icons[name] || '';
+}
+
+// =====================================================
+// INIT
+// =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+    pickAppName();
+    const route = location.hash.replace('#','') || 'dashboard';
+    navigate(route);
+    renderFlora();
+});
+</script>
+</body>
+</html>
